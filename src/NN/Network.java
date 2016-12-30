@@ -15,6 +15,9 @@ public class Network {
 	private Matrix[] interpretations;
 	private Matrix[] activations;
 	
+	public Network() {
+	}
+	
 	public Network(int num_hidden_layer, int num_hidden_unit, 
 			int num_input, int num_output, float stepsize) {
 		this.num_hidden_layer = num_hidden_layer;
@@ -43,8 +46,12 @@ public class Network {
 	 * @param feature
 	 */
 	public void forward(float[] feature) {
-		this.interpretations = new Matrix[this.num_hidden_layer + 1];
-		this.activations = new Matrix[this.num_hidden_layer + 1];
+		if(this.interpretations == null) {
+			this.interpretations = new Matrix[this.num_hidden_layer + 1];
+		}
+		if(this.activations == null) {
+			this.activations = new Matrix[this.num_hidden_layer + 1];
+		}
 		this.activations[0] = new Matrix(this.num_input, 1, feature);
 		for(int idl = 0; idl <= this.num_hidden_layer; ++idl) {
 			this.interpretations[idl] = this.weights[idl].mult(
@@ -57,7 +64,7 @@ public class Network {
 	}
 	
 	/**
-	 * backpropagation
+	 * back propagation
 	 * @param result
 	 */
 	public void backward(int result) {
@@ -118,5 +125,53 @@ public class Network {
 			}
 		}
 		return err;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getNumLayer() {
+		return this.weights.length;
+	}
+	
+	/**
+	 * return weights
+	 * @param id
+	 * @return
+	 */
+	public Matrix getLayer(int id) {
+		assert(id < this.weights.length);
+		return this.weights[id];
+	}
+	
+	/**
+	 * set the size of input and output of network
+	 * @param num_in
+	 * @param num_out
+	 */
+	public void setDimensionality(int num_in, int num_out) {
+		this.num_input = num_in;
+		this.num_output = num_out;
+	}
+	
+	/**
+	 * set the weights and other members for forwards from weights(mats)
+	 * @param mats
+	 */
+	public void setLayers(Matrix[] mats) {
+		assert(mats.length > 0);
+		for(int i = 1; i < mats.length; ++i) {
+			assert(mats[i - 1].getNumRow() == mats[i].getNumCol() + 1);
+		}
+
+		this.num_input = mats[0].getNumCol() - 1;
+		this.num_output = mats[mats.length - 1].getNumRow();
+		this.num_hidden_layer = mats.length - 1;
+		this.num_hidden_unit = mats[0].getNumRow();
+		this.weights = new Matrix[mats.length];
+		for(int i = 0; i < mats.length; ++i) {
+			this.weights[i] = new Matrix(mats[i]);
+		}
 	}
 }

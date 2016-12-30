@@ -10,6 +10,10 @@ public class Matrix {
 	public Matrix() {
 		this(0, 0, false);
 	}
+	
+	public Matrix(Matrix mat) {
+		this(mat.num_row, mat.num_col, mat.data, false);
+	}
 
 	public Matrix(int num_row, int num_col) {
 		this(num_row, num_col, false);

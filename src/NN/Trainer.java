@@ -3,9 +3,6 @@ package NN;
 public class Trainer {
 	private DataSource data_train;
 	private DataSource data_valid;
-	private int num_hidden_layer;
-	private int num_hidden_unit;
-	private int num_output;
 	private Network network;
 	
 	public Trainer(String path_train_image, String path_train_label, 
@@ -50,5 +47,13 @@ public class Trainer {
 	 */
 	public Network getNetwork() {
 		return this.network;
+	}
+	
+	/**
+	 * set trained network
+	 * @return
+	 */
+	public void SetNetwork(Network network) {
+		this.network = network;
 	}
 }
