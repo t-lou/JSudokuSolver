@@ -1,6 +1,8 @@
-package Solver;
+package Test;
 
 import NN.Trainer;
+import Solver.Solver;
+import Solver.SupremeSolver;
 
 public class Main {    
 	public static void main(String[] args) {

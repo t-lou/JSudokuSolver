@@ -1,4 +1,4 @@
-package Solver;
+package ImageProc;
 
 public class ImageProc {
 

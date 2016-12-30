@@ -1,8 +1,10 @@
 package Solver;
 
 import java.io.File;
-import java.io.IOException;
 import javax.imageio.ImageIO;
+
+import ImageProc.ImageProc;
+
 import java.awt.image.BufferedImage;
 
 public class SupremeSolver {
