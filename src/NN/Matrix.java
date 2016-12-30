@@ -319,6 +319,7 @@ public class Matrix {
 									val += kernel.data[idx_k] * 
 											this.data[rr * this.num_col + rc];
 								}
+								++idx_k;
 							}
 						}
 						result.data[(r_offset + ir) * this.num_col + c_offset + ic] = val;
@@ -342,6 +343,40 @@ public class Matrix {
 		
 		for(int i = 0; i < this.data.length; ++i) {
 			this.data[i] = Math.abs(this.data[i]) + Math.abs(mat.data[i]);
+		}
+	}
+	
+	public void setBoundary(float val) {
+		int b = 3;
+		// upper
+		for(int r = 0; r < b; ++r) {
+			int start = r * this.num_col;
+			for(int c = 0; c < this.num_col; ++c) {
+				this.data[start + c] = val;
+			}
+		}
+		// bottom
+		for(int r = this.num_row - 1; r >= this.num_row - 1 - b; --r) {
+			int start = r * this.num_col;
+			for(int c = 0; c < this.num_col; ++c) {
+				this.data[start + c] = val;
+			}
+		}
+		// left
+		for(int c = 0; c < b; ++c) {
+			int start = c;
+			for(int r = 0; r < this.num_row; ++r) {
+				this.data[start] = val;
+				start += this.num_col;
+			}
+		}
+		// right
+		for(int c = this.num_col - 1; c >= this.num_col - 1 - b; --c) {
+			int start = c;
+			for(int r = 0; r < this.num_row; ++r) {
+				this.data[start] = val;
+				start += this.num_col;
+			}
 		}
 	}
 }

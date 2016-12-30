@@ -17,7 +17,6 @@ public class SupremeSolver {
 		this.img_proc = new ImageProc();
 		try {
 			this.img_proc.setImage(ImageIO.read(new File(filename)));
-		} catch (Exception e) {
-		}
+		} catch (Exception e) {}
 	}
 }
