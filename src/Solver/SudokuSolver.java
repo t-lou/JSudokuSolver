@@ -2,7 +2,7 @@ package Solver;
 
 import java.util.Arrays;
 
-public class Solver {
+public class SudokuSolver {
 	private int[][] board;
 	private int block;
 	private int range;
@@ -125,7 +125,7 @@ public class Solver {
     	return true;
 	}
 	
-	public Solver(int[][] mapDigits) {
+	public SudokuSolver(int[][] mapDigits) {
 		this.block = 3;
 		this.range = this.block * this.block;
 		this.board = new int[this.range][this.range];

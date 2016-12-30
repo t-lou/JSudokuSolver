@@ -286,4 +286,62 @@ public class Matrix {
 	public int getNumRow() {
 		return this.num_row;
 	}
+	
+	/**
+	 * 2d convolution
+	 * @param kernel
+	 * @return
+	 */
+	public Matrix conv(Matrix kernel) {
+		int blk = 32;
+		int[] plan_r = this.genBlockPlan(this.num_row, blk);
+		int[] plan_c = this.genBlockPlan(this.num_col, blk);
+		Matrix result = new Matrix(this.num_row, this.num_col);
+//		Arrays.fill(result.data, 0.0f);
+		int krr = kernel.num_row / 2;
+		int krc = kernel.num_col / 2;
+		
+		int r_offset = 0;
+		for(int rb : plan_r) {
+			int c_offset = 0;
+			for(int cb : plan_c) {
+				for(int ir = 0; ir < rb; ++ir) {
+					int r = r_offset + ir - krr;
+					for(int ic = 0; ic < cb; ++ic) {
+						int c = c_offset + ic - krc;
+						float val = 0.0f;
+						int idx_k = 0;
+						for(int ikr = 0; ikr < kernel.num_row; ++ikr) {
+							for(int ikc = 0; ikc < kernel.num_col; ++ikc) {
+								int rr = r + ikr;
+								int rc = c + ikc;
+								if(rr >= 0 && rc >= 0 && rr < this.num_row && rc < this.num_col) {
+									val += kernel.data[idx_k] * 
+											this.data[rr * this.num_col + rc];
+								}
+							}
+						}
+						result.data[(r_offset + ir) * this.num_col + c_offset + ic] = val;
+					}
+				}
+				c_offset += cb;
+			}
+			r_offset += rb;
+		}
+		
+		return result;
+	}
+
+	/**
+	 * this := |this| + |mat|
+	 * @param mat
+	 */
+	public void addAbsElemWiseOnSelf(Matrix mat) {
+		assert(mat.num_col == this.num_col);
+		assert(mat.num_row == this.num_row);
+		
+		for(int i = 0; i < this.data.length; ++i) {
+			this.data[i] = Math.abs(this.data[i]) + Math.abs(mat.data[i]);
+		}
+	}
 }
