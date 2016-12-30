@@ -346,8 +346,12 @@ public class Matrix {
 		}
 	}
 	
+	/**
+	 * set boundary to val
+	 * @param val
+	 */
 	public void setBoundary(float val) {
-		int b = 3;
+		int b = 10;
 		// upper
 		for(int r = 0; r < b; ++r) {
 			int start = r * this.num_col;
@@ -377,6 +381,27 @@ public class Matrix {
 				this.data[start] = val;
 				start += this.num_col;
 			}
+		}
+	}
+	
+	/**
+	 * set values to [0, 1]
+	 */
+	public void normalizeOnSelf() {
+		float min = this.data[0];
+		float max = this.data[0];
+		float scale;
+		for(float f : this.data) {
+			if(min > f) {
+				min = f;
+			}
+			if(max < f) {
+				max = f;
+			}
+		}
+		scale = 1.0f / (max - min);
+		for(int i = 0; i < this.data.length; ++i) {
+			this.data[i] = (this.data[i] - min) * scale;
 		}
 	}
 }
