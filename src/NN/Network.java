@@ -8,6 +8,9 @@ public class Network {
 	private int num_input;
 	private int num_output;
 	private float stepsize;
+	private float stepsize_base;
+	private int count_back_prop;
+	private int count_unit;
 	private Matrix[] weights;
 	private Matrix[] interpretations;
 	private Matrix[] activations;
@@ -19,7 +22,9 @@ public class Network {
 		this.num_input = num_input;
 		this.num_output = num_output;
 		this.weights = new Matrix[num_hidden_layer + 1];
-		this.stepsize = stepsize;
+		this.stepsize_base = stepsize;
+		this.stepsize = this.stepsize_base;
+		this.count_back_prop = 0;
 		
 		// last row is for bias
 		this.weights[0] = new Matrix(num_hidden_unit, num_input + 1, true);
@@ -27,6 +32,10 @@ public class Network {
 			this.weights[i] = new Matrix(num_hidden_unit, num_hidden_unit + 1, true);
 		}
 		this.weights[num_hidden_layer] = new Matrix(num_output, num_hidden_unit + 1, true);
+		this.count_unit = 0;
+		for(Matrix w : this.weights) {
+			this.count_unit += w.getNumCol() * w.getNumRow();
+		}
 	}
 	
 	/**
@@ -39,7 +48,7 @@ public class Network {
 		this.activations[0] = new Matrix(this.num_input, 1, feature);
 		for(int idl = 0; idl <= this.num_hidden_layer; ++idl) {
 			this.interpretations[idl] = this.weights[idl].mult(
-					this.activations[idl].appendBias());
+					this.activations[idl].appendAsVecBias());
 			if(idl < this.num_hidden_layer) {
 				this.activations[idl + 1] = this.interpretations[idl].relu();
 			}
@@ -59,7 +68,7 @@ public class Network {
 			if(idl < this.num_hidden_layer) {
 				diff.multElemWiseOnSelf(this.interpretations[idl].relu_der());
 			}
-			Matrix delta = diff.ger(this.activations[idl].appendBias());
+			Matrix delta = diff.ger(this.activations[idl].appendAsVecBias());
 			if(idl > 0) {
 				diff.conjAsVecOnSelf();
 				diff = diff.mult(this.weights[idl]);
@@ -67,6 +76,12 @@ public class Network {
 						Arrays.copyOf(diff.getData(), diff.getNumCol() - 1));
 			}
 			this.weights[idl].addOnSelf(delta, -this.stepsize);
+		}
+		
+		++this.count_back_prop;
+		if(this.count_back_prop >= this.count_unit) {
+			this.stepsize /= 2.0f;
+			this.count_back_prop = 0;
 		}
 	}
 	

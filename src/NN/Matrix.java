@@ -57,6 +57,23 @@ public class Matrix {
 		}
 	}
 	
+	private int[] genBlockPlan(int len, int blk) {
+		int num_blk = len / blk;
+		int[] plan;
+		if(num_blk > 0)
+		{
+			int rest = len - num_blk * blk;
+			plan = new int[num_blk];
+			Arrays.fill(plan, blk);
+			plan[num_blk - 1] += rest;
+		}
+		else {
+			plan = new int[1];
+			plan[0] = len;
+		}
+		return plan;
+	}
+	
 	/**
 	 * suppose this is r-length vector, vec_b is c-length vector, 
 	 *     return (r,c) matrix of this*vec_b.T
@@ -67,10 +84,24 @@ public class Matrix {
 		assert(this.num_col == 1);
 		assert(vec_b.num_col == 1);
 		Matrix result = new Matrix(this.num_row, vec_b.num_row);
-		for(int r = 0; r < this.num_row; ++r) {
-			for(int c = 0; c < vec_b.num_row; ++c) {
-				result.data[r * vec_b.num_row + c] = this.data[r] * vec_b.data[c]; 
+		int blk = 32;
+		int[] plan_r = this.genBlockPlan(this.num_row, blk);
+		int[] plan_c = this.genBlockPlan(vec_b.num_row, blk);
+		int r_offset = 0;
+		for(int rb : plan_r) {
+			int c_offset = 0;
+			for(int cb : plan_c) {
+				for(int ir = 0; ir < rb; ++ir) {
+					int r = r_offset + ir;
+					int row_start = r * vec_b.num_row;
+					for(int ic = 0; ic < cb; ++ic) {
+						int c = c_offset + ic;
+						result.data[row_start + c] = this.data[r] * vec_b.data[c]; 
+					}
+				}
+				c_offset += cb;
 			}
+			r_offset += rb;
 		}
 		return result;
 	}
@@ -100,14 +131,51 @@ public class Matrix {
 		assert(this.num_col == num_dua);
 		
 		float[] values = new float[num_row * num_col];
+		Arrays.fill(values, 0.0f);
 		// TODO optimize
-		for(int r = 0; r < num_row; ++r) {
-			for(int c = 0; c < num_col; ++c) {
-				float val = 0.0f;
-				for(int i = 0; i < num_dua; ++i) {
-					val += this.data[r * num_dua + i] * another.data[i * num_col + c];
+		if(num_row < 20 || num_col < 20) {
+			// naive matrix multiplication
+			for(int r = 0; r < num_row; ++r) {
+				int row_start = r * num_dua;
+				for(int c = 0; c < num_col; ++c) {
+					float val = 0.0f;
+					for(int i = 0; i < num_dua; ++i) {
+						val += this.data[row_start + i] * another.data[i * num_col + c];
+					}
+					values[r * num_col + c] = val;
 				}
-				values[r * num_col + c] = val;
+			}
+		}
+		else {
+			// blocked matrix multiplication
+			int blk = 32;
+			int[] plan_r = this.genBlockPlan(num_row, blk);
+			int[] plan_c = this.genBlockPlan(num_col, blk);
+			int[] plan_d = this.genBlockPlan(num_dua, blk);
+			int r_offset = 0;
+			for(int rb : plan_r) {
+				int c_offset = 0;
+				for(int cb : plan_c) {
+					for(int ir = 0; ir < rb; ++ir) {
+						int r = r_offset + ir;
+						for(int ic = 0; ic < cb; ++ic) {
+							int c = c_offset + ic;
+							int d_offset = 0;
+							float delta = 0.0f;
+							for(int db : plan_d) {
+								for(int id = 0; id < db; ++id) {
+									int d = d_offset + id;
+									delta += this.data[r * num_dua + d] 
+											* another.data[d * num_col + c];
+								}
+								d_offset += db;
+							}
+							values[r * num_col + c] += delta;
+						}
+					}
+					c_offset += cb;
+				}
+				r_offset += rb;
 			}
 		}
 		
@@ -186,7 +254,7 @@ public class Matrix {
 	 * this := (this, 1), suppose this is vector (1 column)
 	 * @return
 	 */
-	public Matrix appendBias() {
+	public Matrix appendAsVecBias() {
 		assert(this.num_col == 1);
 		return new Matrix(this.num_row, this.num_col, this.data, true);
 	}
