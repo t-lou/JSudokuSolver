@@ -1,5 +1,7 @@
 package NN;
 
+import java.util.Random;
+
 public class Trainer {
 	private DataSource data_train;
 	private DataSource data_valid;
@@ -14,14 +16,24 @@ public class Trainer {
 				this.data_train.getDim(), num_output, stepsize);
 	}
 	
+	private float[] getRotatedImage(float[] image, int num_rotation) {
+		Matrix rotation = new Matrix(this.data_valid.getDim0(), this.data_valid.getDim1(), image);
+		for(int r = 0; r < num_rotation; ++r) {
+			rotation.rotateClockwise();
+		}
+		return rotation.getData();
+	}
+	
 	/**
 	 * test on validation data
 	 */
 	public void valid() {
 		int count = 0;
+		Random rand = new Random();
 		for(int i = 0; i < this.data_valid.getNumData(); ++i)
 		{
-			this.network.forward(this.data_valid.getImage(i));
+//			this.network.forward(this.data_valid.getImage(i));
+			this.network.forward(this.getRotatedImage(this.data_valid.getImage(i), rand.nextInt() % 4));
 			if(this.network.getResult() == this.data_valid.getLabel(i)) {
 				++count;
 			}
@@ -33,9 +45,11 @@ public class Trainer {
 	 * train on training data
 	 */
 	public void train() {
+		Random rand = new Random();
 		for(int i = 0; i < this.data_train.getNumData(); ++i)
 		{
-			this.network.forward(this.data_train.getImage(i));
+//			this.network.forward(this.data_train.getImage(i));
+			this.network.forward(this.getRotatedImage(this.data_train.getImage(i), rand.nextInt() % 4));
 			this.network.backward(this.data_train.getLabel(i));
 		}
 		System.out.println("finished training");

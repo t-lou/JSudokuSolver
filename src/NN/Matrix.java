@@ -1,6 +1,9 @@
 package NN;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 public class Matrix {
@@ -384,6 +387,22 @@ public class Matrix {
 		}
 	}
 	
+	public void rotateClockwise() {
+		float[] tmp = new float[this.data.length];
+		System.arraycopy(this.data, 0, tmp, 0, tmp.length);
+
+		for(int r = 0; r < this.num_row; ++r) {
+			int c1 = this.num_row - 1 - r;
+			for(int c = 0; c < this.num_col; ++c) {
+				this.data[(this.num_col - 1 - c) * this.num_row + c1] = tmp[r * this.num_col + c];
+			}
+		}
+		
+		int t = this.num_col;
+		this.num_col = this.num_row;
+		this.num_row = t;
+	}
+	
 	/**
 	 * set values to [0, 1]
 	 */
@@ -403,5 +422,85 @@ public class Matrix {
 		for(int i = 0; i < this.data.length; ++i) {
 			this.data[i] = (this.data[i] - min) * scale;
 		}
+	}
+	
+	private int[] getSortOrder(List<Float> list) {
+		List<Integer> order = new LinkedList<Integer>();
+		List<Float> sorted = new LinkedList<Float>();
+		
+		int index = 0;
+		for(Float f : list) {
+			if(order.isEmpty()) {
+				sorted.add(f);
+				order.add(index);
+			}
+			else {
+				int l = 0; 
+				int r = sorted.size();
+				int i;
+				float fval = f.floatValue();
+				while(r - l > 16) {
+					i = (l + r ) / 2;
+					if(sorted.get(i).floatValue() > fval) {
+						l = i - 1;
+					}
+					else {
+						r = i;
+					}
+				}
+				for(i = l; i < r && sorted.get(i).floatValue() > fval; ++i) {}
+				sorted.add(i, f);
+				order.add(i, index);
+			}
+			++index;
+		}
+
+		int[] result = new int[order.size()];
+		for(int i = 0; i < order.size(); ++i) {
+			result[i] = order.get(i).intValue();
+		}
+		return result;
+	}
+	
+	public int[][] getLocalMaxima() {
+		List<Float> maximas = new ArrayList<Float>();
+		List<Integer> r_max = new ArrayList<Integer>();
+		List<Integer> c_max = new ArrayList<Integer>();
+		
+		int radius = 4;
+		for(int r = radius; r < this.num_row - radius; ++r) {
+			for(int c = radius; c < this.num_col - radius; ++c) {
+				float val = this.data[r * this.num_col + c];
+				if(val < 0.5f) {
+					continue;
+				}
+				boolean is_max = true;
+				for(int lr = -radius; lr <= radius; ++lr) {
+					int row_start = (r + lr) * this.num_col;
+					for(int lc = -radius; lc <= radius; ++lc) {
+						if(val < this.data[row_start + (c + lc)]) {
+							is_max = false;
+							break;
+						}
+					}
+					if(!is_max) {
+						break;
+					}
+				}
+				
+				if(is_max) {
+					maximas.add(val);
+					r_max.add(r);
+					c_max.add(c);
+				}
+			}
+		}
+		
+		int[][] result = new int[maximas.size()][2];
+		for(int i : this.getSortOrder(maximas)) {
+			result[i][0] = r_max.get(i).intValue();
+			result[i][1] = c_max.get(i).intValue();
+		}
+		return result;
 	}
 }

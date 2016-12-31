@@ -107,10 +107,17 @@ public class ImageProc {
 		this.image_gray.addAbsElemWiseOnSelf(sobel_h);
 		this.image_gray.setBoundary(0.0f);
 //		this.image_gray.normalizeOnSelf();
-//		Matrix hough = this.transformHough(this.image_gray);
-//		hough.normalizeOnSelf();
-//		this.saveImage(hough, "/tmp/hough.png", 1.0f);
-//		this.saveImage(this.image_gray, "/tmp/sobel.png", 1.0f);
+		Matrix hough = this.transformHough(this.image_gray);
+		hough.normalizeOnSelf();
+		this.saveImage(hough, "/tmp/hough.png", 1.0f);
+		this.saveImage(this.image_gray, "/tmp/sobel.png", 1.0f);
+		hough = hough.conv(new Matrix(3, 3, new float[]{
+				0.077847f, 0.123317f, 0.077847f, 
+				0.123317f, 0.195346f, 0.123317f, 
+				0.077847f, 0.123317f, 0.077847f}));
+		hough.normalizeOnSelf();
+		this.saveImage(hough, "/tmp/hough_smooth.png", 1.0f);
+		int[][] index_max = hough.getLocalMaxima();
 	}
 
 	/**

@@ -10,6 +10,7 @@ public class DataSource {
 	private float[][] data_image;
 	private int[] data_label;
 	private int dim_in;
+	private int dim0, dim1;
 
 	/**
 	 * convert four bytes to int
@@ -106,8 +107,9 @@ public class DataSource {
 		int num_image = bytesToInt(Arrays.copyOfRange(raw_image, 4, 8));
 		int num_label = bytesToInt(Arrays.copyOfRange(raw_label, 4, 8));
 		assert(num_image == num_label);
-		this.dim_in = bytesToInt(Arrays.copyOfRange(raw_image, 8, 12)) 
-				* bytesToInt(Arrays.copyOfRange(raw_image, 12, 16));
+		this.dim0 = bytesToInt(Arrays.copyOfRange(raw_image, 8, 12));
+		this.dim1 = bytesToInt(Arrays.copyOfRange(raw_image, 12, 16));
+		this.dim_in = this.dim0 * this.dim1;
 		this.data_label = bytesToInts(Arrays.copyOfRange(raw_label, 8, raw_label.length));
 		this.data_image = bytesToFloatArray(Arrays.copyOfRange(raw_image, 16, raw_image.length),
 				num_label, this.dim_in);
@@ -147,5 +149,13 @@ public class DataSource {
 	 */
 	public int getDim() {
 		return this.dim_in;
+	}
+	
+	public int getDim0() {
+		return this.dim0;
+	}
+
+	public int getDim1() {
+		return this.dim1;
 	}
 }

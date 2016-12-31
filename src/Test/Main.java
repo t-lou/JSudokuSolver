@@ -16,8 +16,8 @@ public class Main {
 //		String path_valid_image = "/home/tlou/Downloads/t10k-images-idx3-ubyte";
 //		String path_valid_label = "/home/tlou/Downloads/t10k-labels-idx1-ubyte";
 //		Trainer trainer = new Trainer(path_train_image, path_train_label, 
-//				path_valid_image, path_valid_label, 4, 300, 10, 0.0001f);
-//		for(int i = 0; i < 20; ++i) {
+//				path_valid_image, path_valid_label, 4, 400, 10, 0.0001f);
+//		for(int i = 0; i < 25; ++i) {
 //			System.out.println("round "+i);
 //			trainer.train();
 //			trainer.valid();
