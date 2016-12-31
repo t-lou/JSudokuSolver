@@ -33,7 +33,8 @@ public class Trainer {
 		for(int i = 0; i < this.data_valid.getNumData(); ++i)
 		{
 //			this.network.forward(this.data_valid.getImage(i));
-			this.network.forward(this.getRotatedImage(this.data_valid.getImage(i), rand.nextInt() % 4));
+			this.network.forward(this.getRotatedImage(this.data_valid.getImage(i), 
+					rand.nextInt() % 4));
 			if(this.network.getResult() == this.data_valid.getLabel(i)) {
 				++count;
 			}
@@ -49,7 +50,8 @@ public class Trainer {
 		for(int i = 0; i < this.data_train.getNumData(); ++i)
 		{
 //			this.network.forward(this.data_train.getImage(i));
-			this.network.forward(this.getRotatedImage(this.data_train.getImage(i), rand.nextInt() % 4));
+			this.network.forward(this.getRotatedImage(this.data_train.getImage(i), 
+					rand.nextInt() % 4));
 			this.network.backward(this.data_train.getLabel(i));
 		}
 		System.out.println("finished training");
