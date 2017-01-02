@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 public class Network {
 	private int num_hidden_layer;
-	private int num_hidden_unit;
 	private int num_input;
 	private int num_output;
 	private float stepsize;
@@ -21,7 +20,6 @@ public class Network {
 	public Network(int num_hidden_layer, int num_hidden_unit, 
 			int num_input, int num_output, float stepsize) {
 		this.num_hidden_layer = num_hidden_layer;
-		this.num_hidden_unit = num_hidden_unit;
 		this.num_input = num_input;
 		this.num_output = num_output;
 		this.weights = new Matrix[num_hidden_layer + 1];
@@ -168,7 +166,6 @@ public class Network {
 		this.num_input = mats[0].getNumCol() - 1;
 		this.num_output = mats[mats.length - 1].getNumRow();
 		this.num_hidden_layer = mats.length - 1;
-		this.num_hidden_unit = mats[0].getNumRow();
 		this.weights = new Matrix[mats.length];
 		for(int i = 0; i < mats.length; ++i) {
 			this.weights[i] = new Matrix(mats[i]);

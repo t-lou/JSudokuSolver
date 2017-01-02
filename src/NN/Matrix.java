@@ -28,7 +28,8 @@ public class Matrix {
 		this.num_row = num_row;
 		if(is_random) {
 			Random rand = new Random();
-			float range = (float)(Math.sqrt(6.0f) / Math.sqrt((float)(num_col + num_row)));
+			float range = (float)(Math.sqrt(6.0) 
+					/ (float)Math.sqrt((double)(num_col + num_row)));
 			for(int i = 0; i < this.data.length; ++i) {
 				this.data[i] = (rand.nextFloat() - 0.5f) * range;
 			}
@@ -59,7 +60,8 @@ public class Matrix {
 	public void multElemWiseOnSelf(Matrix another) {
 		assert(this.num_row == another.num_row);
 		assert(this.num_col == another.num_col);
-		for(int i = 0; i < this.data.length; ++i) {
+		int len = this.data.length;
+		for(int i = 0; i < len; ++i) {
 			this.data[i] *= another.data[i];
 		}
 	}
@@ -91,24 +93,11 @@ public class Matrix {
 		assert(this.num_col == 1);
 		assert(vec_b.num_col == 1);
 		Matrix result = new Matrix(this.num_row, vec_b.num_row);
-		int blk = 32;
-		int[] plan_r = this.genBlockPlan(this.num_row, blk);
-		int[] plan_c = this.genBlockPlan(vec_b.num_row, blk);
-		int r_offset = 0;
-		for(int rb : plan_r) {
-			int c_offset = 0;
-			for(int cb : plan_c) {
-				for(int ir = 0; ir < rb; ++ir) {
-					int r = r_offset + ir;
-					int row_start = r * vec_b.num_row;
-					for(int ic = 0; ic < cb; ++ic) {
-						int c = c_offset + ic;
-						result.data[row_start + c] = this.data[r] * vec_b.data[c]; 
-					}
-				}
-				c_offset += cb;
+		for(int r = 0; r < this.num_row; ++r) {
+			int row_start = r * vec_b.num_row;
+			for(int c = 0; c < vec_b.num_row; ++c) {
+				result.data[row_start + c] = this.data[r] * vec_b.data[c];
 			}
-			r_offset += rb;
 		}
 		return result;
 	}
@@ -121,7 +110,8 @@ public class Matrix {
 	public void addOnSelf(Matrix delta, float scale) {
 		assert(this.num_col == delta.num_col);
 		assert(this.num_row == delta.num_row);
-		for(int i = 0; i < this.data.length; ++i) {
+		int len = this.data.length;
+		for(int i = 0; i < len; ++i) {
 			this.data[i] += delta.data[i] * scale;
 		}
 	}
@@ -139,53 +129,44 @@ public class Matrix {
 		
 		float[] values = new float[num_row * num_col];
 		Arrays.fill(values, 0.0f);
-		// TODO optimize
-		if(num_row < 20 || num_col < 20) {
-			// naive matrix multiplication
+		// naive matrix multiplication
+		if(num_col == 1) {
+			// matrix by vector
+			for(int r = 0; r < num_row; ++r) {
+				int row_start = r * num_dua;
+				float val = 0.0f;
+				for(int i = 0; i < num_dua; ++i) {
+					val += this.data[row_start + i] * another.data[i];
+				}
+				values[r] = val;
+			}
+		}
+		else if(num_row == 1) {
+			// vector by matrix
+			int[] col_start = this.genColStart();
+			for(int c = 0; c < num_col; ++c) {
+				float val = 0.0f;
+				for(int i = 0; i < num_dua; ++i) {
+					val += this.data[i] * another.data[col_start[i] + c];
+				}
+				values[c] = val;
+			}
+		}
+		else {
+			// matrix by matrix
+			int[] col_start = this.genColStart();
 			for(int r = 0; r < num_row; ++r) {
 				int row_start = r * num_dua;
 				for(int c = 0; c < num_col; ++c) {
 					float val = 0.0f;
 					for(int i = 0; i < num_dua; ++i) {
-						val += this.data[row_start + i] * another.data[i * num_col + c];
+						val += this.data[row_start + i] * 
+								another.data[col_start[i] + c];
 					}
-					values[r * num_col + c] = val;
+					values[col_start[r] + c] = val;
 				}
 			}
 		}
-		else {
-			// blocked matrix multiplication
-			int blk = 32;
-			int[] plan_r = this.genBlockPlan(num_row, blk);
-			int[] plan_c = this.genBlockPlan(num_col, blk);
-			int[] plan_d = this.genBlockPlan(num_dua, blk);
-			int r_offset = 0;
-			for(int rb : plan_r) {
-				int c_offset = 0;
-				for(int cb : plan_c) {
-					for(int ir = 0; ir < rb; ++ir) {
-						int r = r_offset + ir;
-						for(int ic = 0; ic < cb; ++ic) {
-							int c = c_offset + ic;
-							int d_offset = 0;
-							float delta = 0.0f;
-							for(int db : plan_d) {
-								for(int id = 0; id < db; ++id) {
-									int d = d_offset + id;
-									delta += this.data[r * num_dua + d] 
-											* another.data[d * num_col + c];
-								}
-								d_offset += db;
-							}
-							values[r * num_col + c] += delta;
-						}
-					}
-					c_offset += cb;
-				}
-				r_offset += rb;
-			}
-		}
-		
 		return new Matrix(num_row, num_col, values);
 	}
 	
@@ -195,7 +176,8 @@ public class Matrix {
 	 */
 	public Matrix relu() {
 		Matrix result = new Matrix(this.num_row, this.num_col, this.data);
-		for(int i = 0; i < result.data.length; ++i) {
+		int len = result.data.length;
+		for(int i = 0; i < len; ++i) {
 			if(result.data[i] < 0.0f) {
 				result.data[i] = 0.0f;
 			}
@@ -209,7 +191,8 @@ public class Matrix {
 	 */
 	public Matrix relu_der() {
 		Matrix result = new Matrix(this.num_row, this.num_col, this.data);
-		for(int i = 0; i < result.data.length; ++i) {
+		int len = result.data.length;
+		for(int i = 0; i < len; ++i) {
 			if(result.data[i] >= 0.0f) {
 				result.data[i] = 1.0f;
 			}
@@ -226,11 +209,12 @@ public class Matrix {
 	public void softmaxAsVecOnSelf() {
 		assert(this.num_row == 1 || this.num_col == 1);
 		float sum = 0.0f;
-		for(int i = 0; i < this.data.length; ++i) {
-			this.data[i] = (float)Math.exp(this.data[i]);
+		int len = this.data.length;
+		for(int i = 0; i < len; ++i) {
+			this.data[i] = (float)Math.exp((double)this.data[i]);
 			sum += this.data[i];
 		}
-		for(int i = 0; i < this.data.length; ++i) {
+		for(int i = 0; i < len; ++i) {
 			this.data[i] /= sum;
 		}
 	}
@@ -288,6 +272,24 @@ public class Matrix {
 	 */
 	public int getNumRow() {
 		return this.num_row;
+	}
+	
+	private int[] genArithmeticSequence(int len, int diff) {
+		int[] result = new int[len];
+		int this_ = 0;
+		for(int i = 0; i < len; ++i) {
+			result[i] = this_;
+			this_ += diff;
+		}
+		return result;
+	}
+	
+	private int[] genRowStart() {
+		return this.genArithmeticSequence(this.num_row, this.num_col);
+	}
+	
+	private int[] genColStart() {
+		return this.genArithmeticSequence(this.num_col, this.num_row);
 	}
 	
 	/**
@@ -409,6 +411,7 @@ public class Matrix {
 	public void normalizeOnSelf() {
 		float min = this.data[0];
 		float max = this.data[0];
+		int len = this.data.length;
 		float scale;
 		for(float f : this.data) {
 			if(min > f) {
@@ -419,7 +422,7 @@ public class Matrix {
 			}
 		}
 		scale = 1.0f / (max - min);
-		for(int i = 0; i < this.data.length; ++i) {
+		for(int i = 0; i < len; ++i) {
 			this.data[i] = (this.data[i] - min) * scale;
 		}
 	}
@@ -455,9 +458,12 @@ public class Matrix {
 			++index;
 		}
 
-		int[] result = new int[order.size()];
-		for(int i = 0; i < order.size(); ++i) {
-			result[i] = order.get(i).intValue();
+		int size_order = order.size();
+		int[] result = new int[size_order];
+		int id_order = 0;
+		for(Integer i : order) {
+			result[id_order] = i.intValue();
+			++id_order;
 		}
 		return result;
 	}
@@ -468,9 +474,12 @@ public class Matrix {
 		List<Integer> c_max = new ArrayList<Integer>();
 		
 		int radius = 4;
-		for(int r = radius; r < this.num_row - radius; ++r) {
-			for(int c = radius; c < this.num_col - radius; ++c) {
-				float val = this.data[r * this.num_col + c];
+		int len_r_loop = this.num_row - radius;
+		int len_c_loop = this.num_col - radius;
+		for(int r = radius; r < len_r_loop; ++r) {
+			int row_start_out = r * this.num_col;
+			for(int c = radius; c < len_c_loop; ++c) {
+				float val = this.data[row_start_out + c];
 				if(val < 0.5f) {
 					continue;
 				}
@@ -497,9 +506,21 @@ public class Matrix {
 		}
 		
 		int[][] result = new int[maximas.size()][2];
-		for(int i : this.getSortOrder(maximas)) {
-			result[i][0] = r_max.get(i).intValue();
-			result[i][1] = c_max.get(i).intValue();
+		int[] sorted_order = this.getSortOrder(maximas);
+		int index = 0;
+		for(int i : sorted_order) {
+			result[index][0] = r_max.get(i).intValue();
+			result[index][1] = c_max.get(i).intValue();
+			++index;
+		}
+		return result;
+	}
+	
+	public float[] getElement(int[][] index) {
+		float[] result = new float[index.length];
+		for(int id = 0; id < index.length; ++id) {
+			assert(index[id].length == 2);
+			result[id] = this.data[index[id][0] * this.num_col + index[id][1]]; 
 		}
 		return result;
 	}

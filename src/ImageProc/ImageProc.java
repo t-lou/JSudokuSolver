@@ -11,6 +11,9 @@ import NN.Matrix;
 
 public class ImageProc {
 	private Matrix image_gray;
+	private Matrix gaussian_1_3;
+	private Matrix sobel_v;
+	private Matrix sobel_h;
 	
 	/**
 	 * save image to file for debugging
@@ -94,30 +97,27 @@ public class ImageProc {
 	 * some filters needed here
 	 */
 	public void filter() {
-//		this.image_gray = image_gray.conv(new Matrix(3, 3, new float[]{
-//				0.077847f, 0.123317f, 0.077847f, 
-//				0.123317f, 0.195346f, 0.123317f, 
-//				0.077847f, 0.123317f, 0.077847f}));
-		Matrix sobel_h = image_gray.conv(new Matrix(3, 3, new float[]{
-				1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f, -1.0f}));
+//		this.image_gray = image_gray.conv(this.gaussian_1_3);
+		Matrix sobel_v = image_gray.conv(this.sobel_v);
 		// sobel vertical
-		this.image_gray = image_gray.conv(new Matrix(3, 3, new float[]{
-				1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f}));
+		this.image_gray = image_gray.conv(this.sobel_h);
 		// sum of absolute value
-		this.image_gray.addAbsElemWiseOnSelf(sobel_h);
+		this.image_gray.addAbsElemWiseOnSelf(sobel_v);
 		this.image_gray.setBoundary(0.0f);
 //		this.image_gray.normalizeOnSelf();
 		Matrix hough = this.transformHough(this.image_gray);
 		hough.normalizeOnSelf();
 		this.saveImage(hough, "/tmp/hough.png", 1.0f);
 		this.saveImage(this.image_gray, "/tmp/sobel.png", 1.0f);
-		hough = hough.conv(new Matrix(3, 3, new float[]{
-				0.077847f, 0.123317f, 0.077847f, 
-				0.123317f, 0.195346f, 0.123317f, 
-				0.077847f, 0.123317f, 0.077847f}));
+		hough = hough.conv(this.gaussian_1_3);
 		hough.normalizeOnSelf();
 		this.saveImage(hough, "/tmp/hough_smooth.png", 1.0f);
 		int[][] index_max = hough.getLocalMaxima();
+		float[] hough_local_max = hough.getElement(index_max);
+		for(int i = 0; i < index_max.length; ++i) {
+			System.out.println(index_max[i][0]+" "+index_max[i][1]
+					+":"+hough_local_max[i]);
+		}
 	}
 
 	/**
@@ -135,5 +135,18 @@ public class ImageProc {
 			}
 		}
 		this.image_gray = new Matrix(image.getHeight(), image.getWidth(), data);
+	}
+	
+	public ImageProc() {
+		this.gaussian_1_3 = new Matrix(3, 3, new float[]{
+				0.077847f, 0.123317f, 0.077847f, 
+				0.123317f, 0.195346f, 0.123317f, 
+				0.077847f, 0.123317f, 0.077847f});
+
+		this.sobel_v = new Matrix(3, 3, new float[]{
+				1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f, -1.0f});
+		// sobel vertical
+		this.sobel_h = new Matrix(3, 3, new float[]{
+				1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f});
 	}
 }

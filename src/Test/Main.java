@@ -5,7 +5,7 @@ import NN.Trainer;
 import Solver.SudokuSolver;
 import Solver.SupremeSolver;
 
-public class Main {    
+public class Main {
 	public static void main(String[] args) {
 		System.out.println("Started");
 		long start = System.currentTimeMillis();
