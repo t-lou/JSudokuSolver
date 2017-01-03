@@ -64,7 +64,7 @@ public class NeuralNetworkStorage
     int[][] sizes = new int[num_layer][2];
 
     count_byte += 4 * num_layer; // offsets
-    for (int i = 0; i < num_layer; ++i)
+    for(int i = 0; i < num_layer; ++i)
     {
       offsets[i] = count_byte;
       count_byte += 8; // size
@@ -78,7 +78,7 @@ public class NeuralNetworkStorage
     System.arraycopy("nnbytlou".getBytes(), 0, buffer, 0, 8);
     // number of layer
     System.arraycopy(intToBytes(num_layer), 0, buffer, 8, 4);
-    for (int i = 0; i < num_layer; ++i)
+    for(int i = 0; i < num_layer; ++i)
     {
       float[] data = network.getLayer(i).getData();
       ByteBuffer bf = ByteBuffer.allocate(4 * data.length);
@@ -89,7 +89,7 @@ public class NeuralNetworkStorage
       System.arraycopy(intToBytes(sizes[i][0]), 0, buffer, offsets[i], 4);
       System.arraycopy(intToBytes(sizes[i][1]), 0, buffer, offsets[i] + 4, 4);
       // weights
-      for (float f : data)
+      for(float f : data)
       {
         bf.putFloat(address, f);
         address += 4;
@@ -112,7 +112,7 @@ public class NeuralNetworkStorage
     assert ("nnbytlou".getBytes() == Arrays.copyOf(bytes, 8));
     int num_layer = bytesToInt(Arrays.copyOfRange(bytes, 8, 12));
     Matrix[] mats = new Matrix[num_layer];
-    for (int idl = 0; idl < num_layer; ++idl)
+    for(int idl = 0; idl < num_layer; ++idl)
     {
       int offset = bytesToInt(Arrays.copyOfRange(bytes, 12 + 4 * idl, 16 + 4 * idl));
       int num_row = bytesToInt(Arrays.copyOfRange(bytes, offset, offset + 4));
@@ -120,7 +120,7 @@ public class NeuralNetworkStorage
       float[] data = new float[num_row * num_col];
       ByteBuffer bf = ByteBuffer.wrap(Arrays.copyOfRange(bytes, offset + 8,
           offset + 8 + 4 * data.length));
-      for (int id = 0; id < data.length; ++id)
+      for(int id = 0; id < data.length; ++id)
       {
         data[id] = bf.getFloat(id * 4);
       }
@@ -143,7 +143,7 @@ public class NeuralNetworkStorage
     try
     {
       File file = new File(filename);
-      if (!file.exists())
+      if(!file.exists())
       {
         file.createNewFile();
       }
@@ -151,7 +151,7 @@ public class NeuralNetworkStorage
       fop.write(bytes);
       fop.flush();
       fop.close();
-    } catch (Exception e)
+    } catch(Exception e)
     {
     }
   }
@@ -168,7 +168,7 @@ public class NeuralNetworkStorage
     try
     {
       network = bytesToNetwork(Files.readAllBytes(Paths.get(filename)));
-    } catch (Exception e)
+    } catch(Exception e)
     {
       network = new Network();
     }

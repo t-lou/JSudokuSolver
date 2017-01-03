@@ -27,16 +27,17 @@ public class ImageProc
   {
     BufferedImage image = new BufferedImage(mat.getNumCol(),
         mat.getNumRow(), BufferedImage.TYPE_3BYTE_BGR);
-    for (int r = 0; r < mat.getNumRow(); ++r)
+    for(int r = 0; r < mat.getNumRow(); ++r)
     {
       int row_start = mat.getNumCol() * r;
-      for (int c = 0; c < mat.getNumCol(); ++c)
+      for(int c = 0; c < mat.getNumCol(); ++c)
       {
         int val = (int) (255.0f * mat.getData()[row_start + c] * scale);
-        if (val > 255)
+        if(val > 255)
         {
           val = 255;
-        } else if (val < 0)
+        }
+        else if(val < 0)
         {
           val = 0;
         }
@@ -47,7 +48,7 @@ public class ImageProc
     {
       File ouptut = new File(filename);
       ImageIO.write(image, "png", ouptut);
-    } catch (Exception e)
+    } catch(Exception e)
     {
     }
   }
@@ -62,7 +63,7 @@ public class ImageProc
   {
     float[] coss = new float[180];
     float[] sins = new float[180];
-    for (int the = 0; the < 180; ++the)
+    for(int the = 0; the < 180; ++the)
     {
       double rad = Math.toRadians((double) the);
       coss[the] = (float) Math.cos(rad);
@@ -71,18 +72,20 @@ public class ImageProc
 
     int max_r = 0;
     int min_r = 0;
-    for (int row = 0; row < image.getNumRow(); row += 5)
+    int num_row = image.getNumRow();
+    int num_col = image.getNumCol();
+    for(int row = 0; row < num_row; row += 5)
     {
-      for (int col = 0; col < image.getNumCol(); col += 5)
+      for(int col = 0; col < num_col; col += 5)
       {
-        for (int the = 0; the < 180; the += 10)
+        for(int the = 0; the < 180; the += 10)
         {
           int rv = Math.round((float) col * coss[the] + (float) row * sins[the]);
-          if (max_r < rv)
+          if(max_r < rv)
           {
             max_r = rv;
           }
-          if (min_r > rv)
+          if(min_r > rv)
           {
             min_r = rv;
           }
@@ -94,15 +97,15 @@ public class ImageProc
     Arrays.fill(hough_values, 0.0f);
 
     int index = 0;
-    for (int row = 0; row < image.getNumRow(); ++row)
+    for(int row = 0; row < num_row; ++row)
     {
-      for (int col = 0; col < image.getNumCol(); ++col)
+      for(int col = 0; col < num_col; ++col)
       {
         float val = image.getData()[index];
-        for (int the = 0; the < 180; ++the)
+        for(int the = 0; the < 180; ++the)
         {
           int rv = Math.round((float) col * coss[the] + (float) row * sins[the]);
-          if (rv < max_r && rv > min_r)
+          if(rv < max_r && rv > min_r)
           {
             hough_values[(rv - min_r) * 180 + the] += val;
           }
@@ -136,11 +139,12 @@ public class ImageProc
     this.saveImage(hough, "/tmp/hough_smooth.png", 1.0f);
     int[][] index_max = hough.getLocalMaxima();
     float[] hough_local_max = hough.getElement(index_max);
-    for (int i = 0; i < index_max.length; ++i)
+    for(int i = 0; i < index_max.length; ++i)
     {
       System.out.println(index_max[i][0] + " " + index_max[i][1]
           + ":" + hough_local_max[i]);
     }
+    System.out.println("there are "+ index_max.length + " local maximas");
   }
 
   /**
@@ -150,18 +154,19 @@ public class ImageProc
    */
   public void setImage(BufferedImage image)
   {
-    float[] data = new float[image.getHeight() * image.getWidth()];
-    for (int r = 0; r < image.getHeight(); ++r)
+    int height = image.getHeight();
+    int width = image.getWidth();
+    float[] data = new float[height * width];
+    for(int r = 0, row_start = 0; r < height; ++r, row_start += width)
     {
-      int row_start = r * image.getWidth();
-      for (int c = 0; c < image.getWidth(); ++c)
+      for(int c = 0; c < width; ++c)
       {
         Color color = new Color(image.getRGB(c, r));
         data[row_start + c] = (0.299f * (float) color.getRed()
             + 0.114f * (float) color.getBlue() + 0.587f * (float) color.getGreen()) / 255.0f;
       }
     }
-    this.image_gray = new Matrix(image.getHeight(), image.getWidth(), data);
+    this.image_gray = new Matrix(height, width, data);
   }
 
   public ImageProc()

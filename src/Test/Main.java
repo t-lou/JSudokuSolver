@@ -19,7 +19,7 @@ public class Main
 //    String path_valid_label = "/home/tlou/Downloads/t10k-labels-idx1-ubyte";
 //    Trainer trainer = new Trainer(path_train_image, path_train_label,
 //        path_valid_image, path_valid_label, 4, 400, 10, 0.0001f);
-//    for (int i = 0; i < 25; ++i)
+//    for(int i = 0; i < 40; ++i)
 //    {
 //      System.out.println("round " + i);
 //      trainer.train();

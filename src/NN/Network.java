@@ -32,13 +32,13 @@ public class Network
 
     // last row is for bias
     this.weights[0] = new Matrix(num_hidden_unit, num_input + 1, true);
-    for (int i = 1; i < num_hidden_layer; ++i)
+    for(int i = 1; i < num_hidden_layer; ++i)
     {
       this.weights[i] = new Matrix(num_hidden_unit, num_hidden_unit + 1, true);
     }
     this.weights[num_hidden_layer] = new Matrix(num_output, num_hidden_unit + 1, true);
     this.count_unit = 0;
-    for (Matrix w : this.weights)
+    for(Matrix w : this.weights)
     {
       this.count_unit += w.getNumCol() * w.getNumRow();
     }
@@ -51,20 +51,20 @@ public class Network
    */
   public void forward(float[] feature)
   {
-    if (this.interpretations == null)
+    if(this.interpretations == null)
     {
       this.interpretations = new Matrix[this.num_hidden_layer + 1];
     }
-    if (this.activations == null)
+    if(this.activations == null)
     {
       this.activations = new Matrix[this.num_hidden_layer + 1];
     }
     this.activations[0] = new Matrix(this.num_input, 1, feature);
-    for (int idl = 0; idl <= this.num_hidden_layer; ++idl)
+    for(int idl = 0; idl <= this.num_hidden_layer; ++idl)
     {
-      this.interpretations[idl] = this.weights[idl].mult(
+      this.interpretations[idl] = this.weights[idl].multiply(
           this.activations[idl].appendAsVecBias());
-      if (idl < this.num_hidden_layer)
+      if(idl < this.num_hidden_layer)
       {
         this.activations[idl + 1] = this.interpretations[idl].relu();
       }
@@ -82,17 +82,17 @@ public class Network
     Matrix diff = new Matrix(this.num_output, 1,
         this.interpretations[this.num_hidden_layer].getData());
     diff.addElement(result, 0, -1.0f);
-    for (int idl = this.num_hidden_layer; idl >= 0; --idl)
+    for(int idl = this.num_hidden_layer; idl >= 0; --idl)
     {
-      if (idl < this.num_hidden_layer)
+      if(idl < this.num_hidden_layer)
       {
-        diff.multElemWiseOnSelf(this.interpretations[idl].relu_der());
+        diff.multiplyElemWiseOnSelf(this.interpretations[idl].reluDer());
       }
       Matrix delta = diff.ger(this.activations[idl].appendAsVecBias());
-      if (idl > 0)
+      if(idl > 0)
       {
         diff.conjAsVecOnSelf();
-        diff = diff.mult(this.weights[idl]);
+        diff = this.weights[idl].multiplyLeft(diff);
         diff = new Matrix(diff.getNumCol() - 1, 1,
             Arrays.copyOf(diff.getData(), diff.getNumCol() - 1));
       }
@@ -100,9 +100,9 @@ public class Network
     }
 
     ++this.count_back_prop;
-    if (this.count_back_prop >= this.count_unit)
+    if(this.count_back_prop >= this.count_unit)
     {
-      this.stepsize /= 2.0f;
+      this.stepsize *= 0.7f;
       this.count_back_prop = 0;
     }
   }
@@ -117,9 +117,9 @@ public class Network
     float max = -1.0f;
     int id_max = -1;
     float[] eval = this.interpretations[this.num_hidden_layer].getData();
-    for (int i = 0; i < this.num_output; ++i)
+    for(int i = 0; i < this.num_output; ++i)
     {
-      if (max < eval[i])
+      if(max < eval[i])
       {
         id_max = i;
         max = eval[i];
@@ -137,12 +137,13 @@ public class Network
   {
     float err = 0.0f;
     float[] eval = this.interpretations[this.num_hidden_layer].getData();
-    for (int i = 0; i < this.num_output; ++i)
+    for(int i = 0; i < this.num_output; ++i)
     {
-      if (eval[i] < 0.5f)
+      if(eval[i] < 0.5f)
       {
         err += eval[i] * eval[i];
-      } else
+      }
+      else
       {
         err += (1.0f - eval[i]) * (1.0f - eval[i]);
       }
@@ -190,7 +191,7 @@ public class Network
   public void setLayers(Matrix[] mats)
   {
     assert (mats.length > 0);
-    for (int i = 1; i < mats.length; ++i)
+    for(int i = 1; i < mats.length; ++i)
     {
       assert (mats[i - 1].getNumRow() == mats[i].getNumCol() + 1);
     }
@@ -199,7 +200,7 @@ public class Network
     this.num_output = mats[mats.length - 1].getNumRow();
     this.num_hidden_layer = mats.length - 1;
     this.weights = new Matrix[mats.length];
-    for (int i = 0; i < mats.length; ++i)
+    for(int i = 0; i < mats.length; ++i)
     {
       this.weights[i] = new Matrix(mats[i]);
     }

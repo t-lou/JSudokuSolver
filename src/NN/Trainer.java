@@ -21,7 +21,7 @@ public class Trainer
   private float[] getRotatedImage(float[] image, int num_rotation)
   {
     Matrix rotation = new Matrix(this.data_valid.getDim0(), this.data_valid.getDim1(), image);
-    for (int r = 0; r < num_rotation; ++r)
+    for(int r = 0; r < num_rotation; ++r)
     {
       rotation.rotateClockwise();
     }
@@ -35,12 +35,12 @@ public class Trainer
   {
     int count = 0;
     Random rand = new Random();
-    for (int i = 0; i < this.data_valid.getNumData(); ++i)
+    for(int i = 0; i < this.data_valid.getNumData(); ++i)
     {
 //			this.network.forward(this.data_valid.getImage(i));
       this.network.forward(this.getRotatedImage(this.data_valid.getImage(i),
           rand.nextInt() % 4));
-      if (this.network.getResult() == this.data_valid.getLabel(i))
+      if(this.network.getResult() == this.data_valid.getLabel(i))
       {
         ++count;
       }
@@ -54,7 +54,7 @@ public class Trainer
   public void train()
   {
     Random rand = new Random();
-    for (int i = 0; i < this.data_train.getNumData(); ++i)
+    for(int i = 0; i < this.data_train.getNumData(); ++i)
     {
 //			this.network.forward(this.data_train.getImage(i));
       this.network.forward(this.getRotatedImage(this.data_train.getImage(i),

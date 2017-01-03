@@ -40,7 +40,7 @@ public class DataSource
     float dev = 0.0f;
     float mean;
 
-    for (int id = 0; id < bytes.length; ++id)
+    for(int id = 0; id < bytes.length; ++id)
     {
       int val_i = 0xFF & (int) bytes[id];
       float val = 1.0f - ((float) val_i) / 255.0f;
@@ -52,7 +52,7 @@ public class DataSource
     mean = sum / (float) bytes.length;
     dev = (float) Math.sqrt(sum_sq / (float) bytes.length - mean * mean);
 
-    for (int id = 0; id < bytes.length; ++id)
+    for(int id = 0; id < bytes.length; ++id)
     {
       result[id] = (result[id] - mean) / dev;
     }
@@ -69,7 +69,7 @@ public class DataSource
   private int[] bytesToInts(byte[] bytes)
   {
     int[] result = new int[bytes.length];
-    for (int i = 0; i < bytes.length; ++i)
+    for(int i = 0; i < bytes.length; ++i)
     {
       result[i] = 0xFF & (int) bytes[i];
     }
@@ -88,7 +88,7 @@ public class DataSource
   {
     assert (len * sub_len == bytes.length);
     float[][] result = new float[len][sub_len];
-    for (int id0 = 0; id0 < len; ++id0)
+    for(int id0 = 0; id0 < len; ++id0)
     {
       result[id0] = normalize(Arrays.copyOfRange(bytes, sub_len * id0,
           sub_len * (id0 + 1)));
@@ -107,7 +107,7 @@ public class DataSource
     try
     {
       return Files.readAllBytes(Paths.get(path));
-    } catch (Exception e)
+    } catch(Exception e)
     {
       return new byte[0];
     }
