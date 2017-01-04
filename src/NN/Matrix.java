@@ -483,25 +483,6 @@ public class Matrix
     }
   }
 
-  public void rotateClockwise()
-  {
-    float[] tmp = new float[this.data.length];
-    System.arraycopy(this.data, 0, tmp, 0, tmp.length);
-
-    for(int r = 0; r < this.num_row; ++r)
-    {
-      int c1 = this.num_row - 1 - r;
-      for(int c = 0; c < this.num_col; ++c)
-      {
-        this.data[(this.num_col - 1 - c) * this.num_row + c1] = tmp[r * this.num_col + c];
-      }
-    }
-
-    int t = this.num_col;
-    this.num_col = this.num_row;
-    this.num_row = t;
-  }
-
   /**
    * set values to [0, 1]
    */

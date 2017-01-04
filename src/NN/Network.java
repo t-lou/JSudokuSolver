@@ -10,7 +10,7 @@ public class Network
   private float stepsize;
   private float stepsize_base;
   private int count_back_prop;
-  private int count_unit;
+  private int num_iter_to_damp_stepsize;
   private Matrix[] weights;
   private Matrix[] interpretations;
   private Matrix[] activations;
@@ -37,11 +37,45 @@ public class Network
       this.weights[i] = new Matrix(num_hidden_unit, num_hidden_unit + 1, true);
     }
     this.weights[num_hidden_layer] = new Matrix(num_output, num_hidden_unit + 1, true);
-    this.count_unit = 0;
+    this.num_iter_to_damp_stepsize = 0;
     for(Matrix w : this.weights)
     {
-      this.count_unit += w.getNumCol() * w.getNumRow();
+      this.num_iter_to_damp_stepsize += w.getNumCol() * w.getNumRow();
     }
+    this.num_iter_to_damp_stepsize *= 2;
+  }
+
+  /**
+   * convert (unsigned) bytes to floats(one byte to one float), then normalize the array
+   *
+   * @param bytes
+   * @return
+   */
+  private float[] normalize(byte[] bytes)
+  {
+    float[] result = new float[bytes.length];
+    float sum = 0.0f;
+    float sum_sq = 0.0f;
+    float mean;
+
+    for(int id = 0; id < bytes.length; ++id)
+    {
+      int val_i = 0xFF & (int) bytes[id];
+      float val = 1.0f - ((float) val_i) / 255.0f;
+      sum += val;
+      sum_sq += val * val;
+      result[id] = val;
+    }
+
+    mean = sum / (float) bytes.length;
+    float dev = (float) Math.sqrt(sum_sq / (float) bytes.length - mean * mean);
+
+    for(int id = 0; id < bytes.length; ++id)
+    {
+      result[id] = (result[id] - mean) / dev;
+    }
+
+    return result;
   }
 
   /**
@@ -49,7 +83,7 @@ public class Network
    *
    * @param feature
    */
-  public void forward(float[] feature)
+  public void forward(byte[] feature)
   {
     if(this.interpretations == null)
     {
@@ -59,7 +93,7 @@ public class Network
     {
       this.activations = new Matrix[this.num_hidden_layer + 1];
     }
-    this.activations[0] = new Matrix(this.num_input, 1, feature);
+    this.activations[0] = new Matrix(this.num_input, 1, this.normalize(feature));
     for(int idl = 0; idl <= this.num_hidden_layer; ++idl)
     {
       this.interpretations[idl] = this.weights[idl].multiply(
@@ -100,9 +134,9 @@ public class Network
     }
 
     ++this.count_back_prop;
-    if(this.count_back_prop >= this.count_unit)
+    if(this.count_back_prop >= this.num_iter_to_damp_stepsize)
     {
-      this.stepsize *= 0.7f;
+      this.stepsize *= 0.5f;
       this.count_back_prop = 0;
     }
   }
