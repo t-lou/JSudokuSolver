@@ -11,28 +11,40 @@ import NN.Matrix;
 
 public class ImageProc
 {
-  private Matrix image_gray;
+  private Matrix image;
   private Matrix gaussian_1_3;
   private Matrix sobel_v;
   private Matrix sobel_h;
+  private Matrix hough;
+  private int offset_hough_r;
 
   /**
    * save image to file for debugging
    *
-   * @param mat
+   * @param image
    * @param filename
-   * @param scale
    */
-  private void saveImage(Matrix mat, String filename, float scale)
+  private static void saveImage(BufferedImage image, String filename)
   {
-    BufferedImage image = new BufferedImage(mat.getNumCol(),
-        mat.getNumRow(), BufferedImage.TYPE_3BYTE_BGR);
-    for(int r = 0; r < mat.getNumRow(); ++r)
+    try
     {
-      int row_start = mat.getNumCol() * r;
-      for(int c = 0; c < mat.getNumCol(); ++c)
+      File ouptut = new File(filename);
+      ImageIO.write(image, "png", ouptut);
+    } catch(Exception e)
+    {
+    }
+  }
+
+  private static BufferedImage matrixToImage(Matrix matrix, float scale)
+  {
+    BufferedImage image = new BufferedImage(matrix.getNumCol(),
+        matrix.getNumRow(), BufferedImage.TYPE_3BYTE_BGR);
+    for(int r = 0; r < matrix.getNumRow(); ++r)
+    {
+      int row_start = matrix.getNumCol() * r;
+      for(int c = 0; c < matrix.getNumCol(); ++c)
       {
-        int val = (int) (255.0f * mat.getData()[row_start + c] * scale);
+        int val = (int) (255.0f * matrix.getData()[row_start + c] * scale);
         if(val > 255)
         {
           val = 255;
@@ -44,13 +56,43 @@ public class ImageProc
         image.setRGB(c, r, new Color(val, val, val).getRGB());
       }
     }
-    try
+    return image;
+  }
+
+  private static BufferedImage drawHoughPoint(BufferedImage image, Color color, int r, int the, int offset_r)
+  {
+    int color_val = color.getRGB();
+    float cos_the = (float)Math.cos(Math.toRadians((double)the));
+    float sin_the = (float)Math.sin(Math.toRadians((double)the));
+    float r_val = (float)(r + offset_r);
+    int nr = image.getHeight();
+    int nc = image.getWidth();
+    System.out.print(cos_the+" "+sin_the);
+    if(Math.abs(cos_the) > Math.sqrt(0.5f))
     {
-      File ouptut = new File(filename);
-      ImageIO.write(image, "png", ouptut);
-    } catch(Exception e)
-    {
+      System.out.println(" one");
+      for(int ir = 0; ir < nr; ++ir)
+      {
+        int ic = Math.round((r_val - sin_the * (float)ir) / cos_the);
+        if(ic >= 0 && ic < nc)
+        {
+          image.setRGB(ic, ir, color_val);
+        }
+      }
     }
+    else
+    {
+      System.out.println(" another");
+      for(int ic = 0; ic < nc; ++ic)
+      {
+        int ir = Math.round((r_val - cos_the * (float)ic) / sin_the);
+        if(ir >= 0 && ir < nr)
+        {
+          image.setRGB(ic, ir, color_val);
+        }
+      }
+    }
+    return image;
   }
 
   /**
@@ -113,7 +155,7 @@ public class ImageProc
         ++index;
       }
     }
-
+    this.offset_hough_r = min_r;
     return new Matrix(max_r - min_r, 180, hough_values);
   }
 
@@ -122,27 +164,25 @@ public class ImageProc
    */
   public void filter()
   {
-//		this.image_gray = image_gray.conv(this.gaussian_1_3);
-    Matrix sobel_v = image_gray.conv(this.sobel_v);
-    // sobel vertical
-    this.image_gray = image_gray.conv(this.sobel_h);
-    // sum of absolute value
-    this.image_gray.addAbsElemWiseOnSelf(sobel_v);
-    this.image_gray.setBoundary(0.0f);
-//		this.image_gray.normalizeOnSelf();
-    Matrix hough = this.transformHough(this.image_gray);
-    hough.normalizeOnSelf();
-    this.saveImage(hough, "/tmp/hough.png", 1.0f);
-    this.saveImage(this.image_gray, "/tmp/sobel.png", 1.0f);
-    hough = hough.conv(this.gaussian_1_3);
-    hough.normalizeOnSelf();
-    this.saveImage(hough, "/tmp/hough_smooth.png", 1.0f);
-    int[][] index_max = hough.getLocalMaxima();
-    float[] hough_local_max = hough.getElement(index_max);
+    Matrix diff = this.image.conv(this.gaussian_1_3, true); // here filtered this.image
+    Matrix diff_v = diff.conv(this.sobel_v, false); // vertical diff of filtered imageimage
+    diff = diff.conv(this.sobel_h, false); // horizonal diff of filtered imageimage
+    diff.addAbsElemWiseOnSelf(diff_v); // omnidirectional diff of filtered image
+    diff.setBoundary(0.0f);
+    this.hough = this.transformHough(diff);
+    this.hough.normalizeOnSelf();
+    this.hough = this.hough.conv(this.gaussian_1_3, true);
+    this.hough.normalizeOnSelf();
+    int[][] index_max = this.hough.getLocalMaxima();
+    float[] hough_local_max = this.hough.getElement(index_max);
+    BufferedImage image = ImageProc.matrixToImage(this.image, 1.0f);
     for(int i = 0; i < index_max.length; ++i)
     {
-      System.out.println(index_max[i][0] + " " + index_max[i][1]
-          + ":" + hough_local_max[i]);
+      System.out.println(i + ": " + index_max[i][0] + " " + index_max[i][1]
+          + ": " + hough_local_max[i]);
+      image = ImageProc.drawHoughPoint(image, new Color(255, 0, 0), index_max[i][0], index_max[i][1],
+          this.offset_hough_r);
+//      ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\" + i + ".png");
     }
     System.out.println("there are "+ index_max.length + " local maximas");
   }
@@ -166,7 +206,7 @@ public class ImageProc
             + 0.114f * (float) color.getBlue() + 0.587f * (float) color.getGreen()) / 255.0f;
       }
     }
-    this.image_gray = new Matrix(height, width, data);
+    this.image = new Matrix(height, width, data);
   }
 
   public ImageProc()

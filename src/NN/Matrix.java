@@ -378,7 +378,7 @@ public class Matrix
    * @param kernel
    * @return
    */
-  public Matrix conv(Matrix kernel)
+  public Matrix conv(Matrix kernel, boolean is_smoothing)
   {
     Matrix result = new Matrix(this.num_row, this.num_col);
     int krr = kernel.num_row / 2;
@@ -394,8 +394,9 @@ public class Matrix
       int r = ir - krr;
       for(int ic = 0; ic < num_col; ++ic)
       {
-        int c = ic - krc;
+        final int c = ic - krc;
         float val = 0.0f;
+        float weight = 0.0f;
         int idx_k = 0;
         for(int ikr = 0; ikr < num_row_kernel; ++ikr)
         {
@@ -407,9 +408,14 @@ public class Matrix
             if(rr >= 0 && rc >= 0 && rr < num_row && rc < num_col)
             {
               val += kernel.data[idx_k] * this.data[row_start + rc];
+              weight += kernel.data[idx_k];
             }
             ++idx_k;
           }
+        }
+        if(is_smoothing)
+        {
+          val /= weight;
         }
         result.data[idx] = val;
         ++idx;
@@ -568,12 +574,12 @@ public class Matrix
     List<Integer> c_max = new ArrayList<Integer>();
 
     int radius = 4;
-    int len_r_loop = this.num_row - radius;
-    int len_c_loop = this.num_col - radius;
-    for(int r = radius; r < len_r_loop; ++r)
+    int len_r_loop = this.num_row;
+    int len_c_loop = this.num_col;
+    for(int r = 0; r < len_r_loop; ++r)
     {
       int row_start_out = r * this.num_col;
-      for(int c = radius; c < len_c_loop; ++c)
+      for(int c = 0; c < len_c_loop; ++c)
       {
         float val = this.data[row_start_out + c];
         if(val < 0.5f)
@@ -583,18 +589,23 @@ public class Matrix
         boolean is_max = true;
         for(int lr = -radius; lr <= radius; ++lr)
         {
-          int row_start = (r + lr) * this.num_col;
-          for(int lc = -radius; lc <= radius; ++lc)
+          int this_r = r + lr;
+          if(this_r >= 0 && this_r < len_r_loop)
           {
-            if(val < this.data[row_start + (c + lc)])
+            int row_start = this_r * this.num_col;
+            for(int lc = -radius; lc <= radius; ++lc)
             {
-              is_max = false;
+              int this_c = c + lc;
+              if(this_c >= 0 && this_c < len_r_loop && val < this.data[row_start + this_c])
+              {
+                is_max = false;
+                break;
+              }
+            }
+            if(!is_max)
+            {
               break;
             }
-          }
-          if(!is_max)
-          {
-            break;
           }
         }
 

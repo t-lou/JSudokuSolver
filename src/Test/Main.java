@@ -13,28 +13,28 @@ public class Main
     long start = System.currentTimeMillis();
 
     // test digit recognition
-    String path = "D:\\home\\workspace\\mnist\\";
+//    String path = "D:\\home\\workspace\\mnist\\";
 //    String path = "/home/tlou/workspace/mnist";
 //    String path_train_image = path + "train-images-idx3-ubyte";
 //    String path_train_label = path + "train-labels-idx1-ubyte";
 //    String path_valid_image = path + "t10k-images-idx3-ubyte";
 //    String path_valid_label = path + "t10k-labels-idx1-ubyte";
-    String path_train_image = path + "notMNIST_large_image";
-    String path_train_label = path + "notMNIST_large_label";
-    String path_valid_image = path + "notMNIST_small_image";
-    String path_valid_label = path + "notMNIST_small_label";
-    Trainer trainer = new Trainer(path_train_image, path_train_label,
-        path_valid_image, path_valid_label, 1, 100, 10, 0.0001f);
-    for(int i = 0; i < 1; ++i)
-    {
-      System.out.println("round " + i);
-      trainer.train();
-      trainer.valid();
-    }
-    NeuralNetworkStorage.save("/home/tlou/nn.nn", trainer.getNetwork());
-    trainer.SetNetwork(NeuralNetworkStorage.load("/home/tlou/nn.nn"));
-    System.out.println("loaded network");
-    trainer.valid();
+//    String path_train_image = path + "notMNIST_large_image";
+//    String path_train_label = path + "notMNIST_large_label";
+//    String path_valid_image = path + "notMNIST_small_image";
+//    String path_valid_label = path + "notMNIST_small_label";
+//    Trainer trainer = new Trainer(path_train_image, path_train_label,
+//        path_valid_image, path_valid_label, 4, 400, 10, 0.00001f);
+//    for(int i = 0; i < 40; ++i)
+//    {
+//      System.out.println("round " + i);
+//      trainer.train();
+//      trainer.valid();
+//    }
+//    NeuralNetworkStorage.save("/home/tlou/nn.nn", trainer.getNetwork());
+//    trainer.SetNetwork(NeuralNetworkStorage.load("/home/tlou/nn.nn"));
+//    System.out.println("loaded network");
+//    trainer.valid();
 
     // test sudoku solver
     int[][] mapping = new int[][]{
@@ -72,8 +72,9 @@ public class Main
 //		solver.solve();
 
 //		// test total solver
-//		SupremeSolver ssolver = new SupremeSolver("/home/tlou/Downloads/cbhsudoku.png");
-//		ssolver.preproc();
+//    SupremeSolver ssolver = new SupremeSolver("/home/tlou/Downloads/cbhsudoku.png");
+		SupremeSolver ssolver = new SupremeSolver("D:\\home\\workspace\\cbhsudoku.png");
+		ssolver.preproc();
 
     long end = System.currentTimeMillis();
     System.out.println("Took " + 0.001f * (float) (end - start) + " s");

@@ -1,7 +1,11 @@
 package NN;
 
+//import javax.imageio.ImageIO;
+//import java.awt.*;
+//import java.awt.image.BufferedImage;
+//import java.io.File;
 import java.util.Arrays;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Trainer
 {
@@ -38,6 +42,30 @@ public class Trainer
     return tmp;
   }
 
+//  private int count;
+//  private void saveImage(byte[] bytes)
+//  {
+//    BufferedImage image = new BufferedImage(this.data_train.getDim0(),
+//        this.data_train.getDim1(), BufferedImage.TYPE_3BYTE_BGR);
+//    for(int r = 0; r < this.data_train.getDim0(); ++r)
+//    {
+//      int row_start = this.data_train.getDim1() * r;
+//      for(int c = 0; c < this.data_train.getDim1(); ++c)
+//      {
+//        int val = (0xFF & bytes[c + row_start]);
+//        image.setRGB(c, r, new Color(val, val, val).getRGB());
+//      }
+//    }
+//    try
+//    {
+//      File ouptut = new File("D:\\home\\workspace\\tmp\\"+this.count+".png");
+//      ImageIO.write(image, "png", ouptut);
+//      ++this.count;
+//    } catch(Exception e)
+//    {
+//    }
+//  }
+
   private byte[] permuteImage(byte[] image, int type)
   {
     boolean is_to_inverse = type < 4;
@@ -60,6 +88,7 @@ public class Trainer
         result[i] = (byte) (0xFF & (0xFF - (0xFFFFFFFF & (int) result[i])));
       }
     }
+//    this.saveImage(result);
     return result;
   }
 
@@ -69,12 +98,11 @@ public class Trainer
   public void valid()
   {
     int count = 0;
-    Random rand = new Random();
     for(int i = 0; i < this.data_valid.getNumData(); ++i)
     {
 //			this.network.forward(this.data_valid.getImage(i));
       this.network.forward(this.permuteImage(this.data_valid.getImage(i),
-          rand.nextInt() % 8));
+          ThreadLocalRandom.current().nextInt() % 8));
       if(this.network.getResult() == this.data_valid.getLabel(i))
       {
         ++count;
@@ -88,12 +116,11 @@ public class Trainer
    */
   public void train()
   {
-    Random rand = new Random();
     for(int i = 0; i < this.data_train.getNumData(); ++i)
     {
 //			this.network.forward(this.data_train.getImage(i));
       this.network.forward(this.permuteImage(this.data_train.getImage(i),
-          rand.nextInt() % 8));
+          ThreadLocalRandom.current().nextInt() % 8));
       this.network.backward(this.data_train.getLabel(i));
     }
     System.out.println("finished training");
