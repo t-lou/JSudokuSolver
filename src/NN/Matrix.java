@@ -72,30 +72,11 @@ public class Matrix
   {
     assert (this.num_row == another.num_row);
     assert (this.num_col == another.num_col);
-    int len = this.data.length;
+    final int len = this.data.length;
     for(int i = 0; i < len; ++i)
     {
       this.data[i] *= another.data[i];
     }
-  }
-
-  private int[] genBlockPlan(int len, int blk)
-  {
-    int num_blk = len / blk;
-    int[] plan;
-    if(num_blk > 0)
-    {
-      int rest = len - num_blk * blk;
-      plan = new int[num_blk];
-      Arrays.fill(plan, blk);
-      plan[num_blk - 1] += rest;
-    }
-    else
-    {
-      plan = new int[1];
-      plan[0] = len;
-    }
-    return plan;
   }
 
   /**
@@ -131,7 +112,7 @@ public class Matrix
   {
     assert (this.num_col == delta.num_col);
     assert (this.num_row == delta.num_row);
-    int len = this.data.length;
+    final int len = this.data.length;
     for(int i = 0; i < len; ++i)
     {
       this.data[i] += delta.data[i] * scale;
@@ -147,16 +128,16 @@ public class Matrix
   public Matrix multiply(Matrix another)
   {
     assert (this.num_col == another.num_row);
-    int num_row = this.num_row;
-    int num_col = another.getNumCol();
-    int num_dua = another.getNumRow();
+    final int num_row = this.num_row;
+    final int num_col = another.getNumCol();
+    final int num_dua = another.getNumRow();
     Matrix result = new Matrix(num_row, num_col);
     if(num_col == 1)
     {
       // matrix by vector
       for(int r = 0; r < num_row; ++r)
       {
-        int row_start = r * num_dua;
+        final int row_start = r * num_dua;
         float val = 0.0f;
         for(int i = 0; i < num_dua; ++i)
         {
@@ -185,7 +166,7 @@ public class Matrix
       int[] col_start = this.genColStart();
       for(int r = 0; r < num_row; ++r)
       {
-        int row_start = r * num_dua;
+        final int row_start = r * num_dua;
         for(int c = 0; c < num_col; ++c)
         {
           float val = 0.0f;
@@ -209,9 +190,9 @@ public class Matrix
   public Matrix multiplyLeft(Matrix another)
   {
     assert (another.num_col == another.num_row);
-    int num_row = another.num_row;
-    int num_col = this.getNumCol();
-    int num_dua = this.getNumRow();
+    final int num_row = another.num_row;
+    final int num_col = this.getNumCol();
+    final int num_dua = this.getNumRow();
     Matrix result = new Matrix(num_row, num_col);
     for(int r = 0, row_start = 0; r < num_row; ++r, row_start += num_dua)
     {
@@ -236,7 +217,7 @@ public class Matrix
   public Matrix relu()
   {
     Matrix result = new Matrix(this.num_row, this.num_col, this.data);
-    int len = result.data.length;
+    final int len = result.data.length;
     for(int i = 0; i < len; ++i)
     {
       if(result.data[i] < 0.0f)
@@ -255,7 +236,7 @@ public class Matrix
   public Matrix reluDer()
   {
     Matrix result = new Matrix(this.num_row, this.num_col, this.data);
-    int len = result.data.length;
+    final int len = result.data.length;
     for(int i = 0; i < len; ++i)
     {
       if(result.data[i] >= 0.0f)
@@ -277,7 +258,7 @@ public class Matrix
   {
     assert (this.num_row == 1 || this.num_col == 1);
     float sum = 0.0f;
-    int len = this.data.length;
+    final int len = this.data.length;
     for(int i = 0; i < len; ++i)
     {
       this.data[i] = (float) Math.exp((double) this.data[i]);
@@ -381,17 +362,17 @@ public class Matrix
   public Matrix conv(Matrix kernel, boolean is_smoothing)
   {
     Matrix result = new Matrix(this.num_row, this.num_col);
-    int krr = kernel.num_row / 2;
-    int krc = kernel.num_col / 2;
+    final int krr = kernel.num_row / 2;
+    final int krc = kernel.num_col / 2;
 
-    int num_row = this.num_row;
-    int num_col = this.num_col;
-    int num_row_kernel = kernel.num_row;
-    int num_col_kernel = kernel.num_col;
+    final int num_row = this.num_row;
+    final int num_col = this.num_col;
+    final int num_row_kernel = kernel.num_row;
+    final int num_col_kernel = kernel.num_col;
     int idx = 0;
     for(int ir = 0; ir < num_row; ++ir)
     {
-      int r = ir - krr;
+      final int r = ir - krr;
       for(int ic = 0; ic < num_col; ++ic)
       {
         final int c = ic - krc;
@@ -400,8 +381,8 @@ public class Matrix
         int idx_k = 0;
         for(int ikr = 0; ikr < num_row_kernel; ++ikr)
         {
-          int rr = r + ikr;
-          int row_start = rr * num_col;
+          final int rr = r + ikr;
+          final int row_start = rr * num_col;
           for(int ikc = 0; ikc < num_col_kernel; ++ikc)
           {
             int rc = c + ikc;
@@ -434,7 +415,7 @@ public class Matrix
     assert (mat.num_col == this.num_col);
     assert (mat.num_row == this.num_row);
 
-    int len = this.data.length;
+    final int len = this.data.length;
     for(int i = 0; i < len; ++i)
     {
       this.data[i] = Math.abs(this.data[i]) + Math.abs(mat.data[i]);
@@ -452,7 +433,7 @@ public class Matrix
     // upper
     for(int r = 0; r < b; ++r)
     {
-      int start = r * this.num_col;
+      final int start = r * this.num_col;
       for(int c = 0; c < this.num_col; ++c)
       {
         this.data[start + c] = val;
@@ -461,7 +442,7 @@ public class Matrix
     // bottom
     for(int r = this.num_row - 1; r >= this.num_row - 1 - b; --r)
     {
-      int start = r * this.num_col;
+      final int start = r * this.num_col;
       for(int c = 0; c < this.num_col; ++c)
       {
         this.data[start + c] = val;
@@ -496,7 +477,7 @@ public class Matrix
   {
     float min = this.data[0];
     float max = this.data[0];
-    int len = this.data.length;
+    final int len = this.data.length;
     float scale;
     for(float f : this.data)
     {
@@ -573,15 +554,15 @@ public class Matrix
     List<Integer> r_max = new ArrayList<Integer>();
     List<Integer> c_max = new ArrayList<Integer>();
 
-    int radius = 4;
-    int len_r_loop = this.num_row;
-    int len_c_loop = this.num_col;
+    final int radius = 4;
+    final int len_r_loop = this.num_row;
+    final int len_c_loop = this.num_col;
     for(int r = 0; r < len_r_loop; ++r)
     {
-      int row_start_out = r * this.num_col;
+      final int row_start_out = r * this.num_col;
       for(int c = 0; c < len_c_loop; ++c)
       {
-        float val = this.data[row_start_out + c];
+        final float val = this.data[row_start_out + c];
         if(val < 0.5f)
         {
           continue;
@@ -589,13 +570,13 @@ public class Matrix
         boolean is_max = true;
         for(int lr = -radius; lr <= radius; ++lr)
         {
-          int this_r = r + lr;
+          final int this_r = r + lr;
           if(this_r >= 0 && this_r < len_r_loop)
           {
-            int row_start = this_r * this.num_col;
+            final int row_start = this_r * this.num_col;
             for(int lc = -radius; lc <= radius; ++lc)
             {
-              int this_c = c + lc;
+              final int this_c = c + lc;
               if(this_c >= 0 && this_c < len_r_loop && val < this.data[row_start + this_c])
               {
                 is_max = false;

@@ -32,8 +32,8 @@ public class Trainer
 
     for(int r = 0; r < row; ++r)
     {
-      int c1 = row - 1 - r;
-      int row_start = r * col;
+      final int c1 = row - 1 - r;
+      final int row_start = r * col;
       for(int c = 0; c < col; ++c)
       {
         tmp[c * row + c1] = image[row_start + c];
@@ -68,8 +68,8 @@ public class Trainer
 
   private byte[] permuteImage(byte[] image, int type)
   {
-    boolean is_to_inverse = type < 4;
-    int num_rot = type % 4;
+    final boolean is_to_inverse = type < 4;
+    final int num_rot = type % 4;
     byte[] result = Arrays.copyOf(image, image.length);
     int nr = this.dim[0];
     int nc = this.dim[1];

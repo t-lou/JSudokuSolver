@@ -41,7 +41,7 @@ public class ImageProc
         matrix.getNumRow(), BufferedImage.TYPE_3BYTE_BGR);
     for(int r = 0; r < matrix.getNumRow(); ++r)
     {
-      int row_start = matrix.getNumCol() * r;
+      final int row_start = matrix.getNumCol() * r;
       for(int c = 0; c < matrix.getNumCol(); ++c)
       {
         int val = (int) (255.0f * matrix.getData()[row_start + c] * scale);
@@ -61,19 +61,17 @@ public class ImageProc
 
   private static BufferedImage drawHoughPoint(BufferedImage image, Color color, int r, int the, int offset_r)
   {
-    int color_val = color.getRGB();
-    float cos_the = (float)Math.cos(Math.toRadians((double)the));
-    float sin_the = (float)Math.sin(Math.toRadians((double)the));
-    float r_val = (float)(r + offset_r);
-    int nr = image.getHeight();
-    int nc = image.getWidth();
-    System.out.print(cos_the+" "+sin_the);
+    final int color_val = color.getRGB();
+    final float cos_the = (float)Math.cos(Math.toRadians((double)the));
+    final float sin_the = (float)Math.sin(Math.toRadians((double)the));
+    final float r_val = (float)(r + offset_r);
+    final int nr = image.getHeight();
+    final int nc = image.getWidth();
     if(Math.abs(cos_the) > Math.sqrt(0.5f))
     {
-      System.out.println(" one");
       for(int ir = 0; ir < nr; ++ir)
       {
-        int ic = Math.round((r_val - sin_the * (float)ir) / cos_the);
+        final int ic = Math.round((r_val - sin_the * (float)ir) / cos_the);
         if(ic >= 0 && ic < nc)
         {
           image.setRGB(ic, ir, color_val);
@@ -82,10 +80,9 @@ public class ImageProc
     }
     else
     {
-      System.out.println(" another");
       for(int ic = 0; ic < nc; ++ic)
       {
-        int ir = Math.round((r_val - cos_the * (float)ic) / sin_the);
+        final int ir = Math.round((r_val - cos_the * (float)ic) / sin_the);
         if(ir >= 0 && ir < nr)
         {
           image.setRGB(ic, ir, color_val);
@@ -114,15 +111,15 @@ public class ImageProc
 
     int max_r = 0;
     int min_r = 0;
-    int num_row = image.getNumRow();
-    int num_col = image.getNumCol();
+    final int num_row = image.getNumRow();
+    final int num_col = image.getNumCol();
     for(int row = 0; row < num_row; row += 5)
     {
       for(int col = 0; col < num_col; col += 5)
       {
         for(int the = 0; the < 180; the += 10)
         {
-          int rv = Math.round((float) col * coss[the] + (float) row * sins[the]);
+          final int rv = Math.round((float) col * coss[the] + (float) row * sins[the]);
           if(max_r < rv)
           {
             max_r = rv;
@@ -143,7 +140,7 @@ public class ImageProc
     {
       for(int col = 0; col < num_col; ++col)
       {
-        float val = image.getData()[index];
+        final float val = image.getData()[index];
         for(int the = 0; the < 180; ++the)
         {
           int rv = Math.round((float) col * coss[the] + (float) row * sins[the]);
@@ -184,6 +181,7 @@ public class ImageProc
           this.offset_hough_r);
 //      ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\" + i + ".png");
     }
+    ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\lines.png");
     System.out.println("there are "+ index_max.length + " local maximas");
   }
 
@@ -194,8 +192,8 @@ public class ImageProc
    */
   public void setImage(BufferedImage image)
   {
-    int height = image.getHeight();
-    int width = image.getWidth();
+    final int height = image.getHeight();
+    final int width = image.getWidth();
     float[] data = new float[height * width];
     for(int r = 0, row_start = 0; r < height; ++r, row_start += width)
     {

@@ -24,8 +24,8 @@ public class SudokuSolver
     }
     else
     {
-      int offset_row = (row / this.block) * this.block;
-      int offset_col = (col / this.block) * this.block;
+      final int offset_row = (row / this.block) * this.block;
+      final int offset_col = (col / this.block) * this.block;
       for(int i = 0; i < this.range; ++i)
       {
         if(value == this.board[row][i])

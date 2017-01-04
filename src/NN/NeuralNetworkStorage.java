@@ -114,9 +114,9 @@ public class NeuralNetworkStorage
     Matrix[] mats = new Matrix[num_layer];
     for(int idl = 0; idl < num_layer; ++idl)
     {
-      int offset = bytesToInt(Arrays.copyOfRange(bytes, 12 + 4 * idl, 16 + 4 * idl));
-      int num_row = bytesToInt(Arrays.copyOfRange(bytes, offset, offset + 4));
-      int num_col = bytesToInt(Arrays.copyOfRange(bytes, offset + 4, offset + 8));
+      final int offset = bytesToInt(Arrays.copyOfRange(bytes, 12 + 4 * idl, 16 + 4 * idl));
+      final int num_row = bytesToInt(Arrays.copyOfRange(bytes, offset, offset + 4));
+      final int num_col = bytesToInt(Arrays.copyOfRange(bytes, offset + 4, offset + 8));
       float[] data = new float[num_row * num_col];
       ByteBuffer bf = ByteBuffer.wrap(Arrays.copyOfRange(bytes, offset + 8,
           offset + 8 + 4 * data.length));

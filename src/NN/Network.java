@@ -68,7 +68,7 @@ public class Network
     }
 
     mean = sum / (float) bytes.length;
-    float dev = (float) Math.sqrt(sum_sq / (float) bytes.length - mean * mean);
+    final float dev = (float) Math.sqrt(sum_sq / (float) bytes.length - mean * mean);
 
     for(int id = 0; id < bytes.length; ++id)
     {
