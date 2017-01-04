@@ -13,13 +13,19 @@ public class Main
     long start = System.currentTimeMillis();
 
     // test digit recognition
-    String path_train_image = "/home/tlou/Downloads/train-images-idx3-ubyte";
-    String path_train_label = "/home/tlou/Downloads/train-labels-idx1-ubyte";
-    String path_valid_image = "/home/tlou/Downloads/t10k-images-idx3-ubyte";
-    String path_valid_label = "/home/tlou/Downloads/t10k-labels-idx1-ubyte";
+    String path = "D:\\home\\workspace\\mnist\\";
+//    String path = "/home/tlou/workspace/mnist";
+//    String path_train_image = path + "train-images-idx3-ubyte";
+//    String path_train_label = path + "train-labels-idx1-ubyte";
+//    String path_valid_image = path + "t10k-images-idx3-ubyte";
+//    String path_valid_label = path + "t10k-labels-idx1-ubyte";
+    String path_train_image = path + "notMNIST_large_image";
+    String path_train_label = path + "notMNIST_large_label";
+    String path_valid_image = path + "notMNIST_small_image";
+    String path_valid_label = path + "notMNIST_small_label";
     Trainer trainer = new Trainer(path_train_image, path_train_label,
-        path_valid_image, path_valid_label, 4, 400, 10, 0.0001f);
-    for(int i = 0; i < 40; ++i)
+        path_valid_image, path_valid_label, 1, 100, 10, 0.0001f);
+    for(int i = 0; i < 1; ++i)
     {
       System.out.println("round " + i);
       trainer.train();
