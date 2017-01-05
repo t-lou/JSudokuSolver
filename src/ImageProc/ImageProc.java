@@ -13,6 +13,8 @@ public class ImageProc
 {
   private Matrix image;
   private Matrix gaussian_1_3;
+  private Matrix laplacian_4;
+  private Matrix laplacian_8;
   private Matrix sobel_v;
   private Matrix sobel_h;
   private Matrix hough;
@@ -156,32 +158,73 @@ public class ImageProc
     return new Matrix(max_r - min_r, 180, hough_values);
   }
 
+  private static Matrix filterNonLocalMaxima(Matrix image, int radius, float minimal)
+  {
+    final int nr = image.getNumRow(), nc = image.getNumCol();
+    final int r_max = nr - radius, c_max = nc - radius;
+    int[][] index_max = image.getLocalMaxima(radius, minimal, false);
+    float[] filtered = new float[nr * nc];
+    float[] original = image.getData();
+    Arrays.fill(filtered, 0.0f);
+    for(int[] index : index_max)
+    {
+      if(index[0] >= radius && index[0] < r_max && index[1] >= radius && index[1] < c_max)
+      {
+        final float thres = original[index[0] * nc + index[1]] * 0.8f;
+        for(int r = -radius; r <= radius; ++r)
+        {
+          final int row_start = (r + index[0]) * nc;
+          for(int c = -radius; c <= radius; ++c)
+          {
+            final int index_1d = row_start + c + index[1];
+            if(original[index_1d] > thres)
+            {
+              filtered[index_1d] = original[index_1d];
+            }
+          }
+        }
+      }
+    }
+    return new Matrix(nr, nc, filtered);
+  }
+
   /**
    * some filters needed here
    */
   public void filter()
   {
     Matrix diff = this.image.conv(this.gaussian_1_3, true); // here filtered this.image
-    Matrix diff_v = diff.conv(this.sobel_v, false); // vertical diff of filtered imageimage
-    diff = diff.conv(this.sobel_h, false); // horizonal diff of filtered imageimage
+    diff = diff.conv(this.gaussian_1_3, true); // here filtered this.image
+    // with sobel
+    Matrix diff_v = diff.conv(this.sobel_v, false); // vertical diff of filtered image
+    diff = diff.conv(this.sobel_h, false); // horizontal diff of filtered image
     diff.addAbsElemWiseOnSelf(diff_v); // omnidirectional diff of filtered image
+    // with laplacian
+//    diff = this.image.conv(this.laplacian_8, false);
+//    diff.addAbsElemWiseOnSelf(diff);
+    diff.normalizeOnSelf();
+//    diff.thresholdOnSelf(0.3f);
+    diff.erodeOnSelf(1, 0.2f);
+//    diff = ImageProc.filterNonLocalMaxima(diff, 1, 0.8f); // only use local maxima for hough transform
+//    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "D:\\home\\workspace\\tmp\\diff.png");
     diff.setBoundary(0.0f);
     this.hough = this.transformHough(diff);
     this.hough.normalizeOnSelf();
     this.hough = this.hough.conv(this.gaussian_1_3, true);
     this.hough.normalizeOnSelf();
-    int[][] index_max = this.hough.getLocalMaxima();
+//    ImageProc.saveImage(ImageProc.matrixToImage(this.hough, 1.0f), "D:\\home\\workspace\\tmp\\hough.png");
+    int[][] index_max = this.hough.getLocalMaxima(4, 0.5f, true);
     float[] hough_local_max = this.hough.getElement(index_max);
     BufferedImage image = ImageProc.matrixToImage(this.image, 1.0f);
     for(int i = 0; i < index_max.length; ++i)
     {
       System.out.println(i + ": " + index_max[i][0] + " " + index_max[i][1]
           + ": " + hough_local_max[i]);
-      image = ImageProc.drawHoughPoint(image, new Color(255, 0, 0), index_max[i][0], index_max[i][1],
+      image = ImageProc.drawHoughPoint(image, Color.red, index_max[i][0], index_max[i][1],
           this.offset_hough_r);
 //      ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\" + i + ".png");
     }
-    ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\lines.png");
+//    ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\lines.png");
     System.out.println("there are "+ index_max.length + " local maximas");
   }
 
@@ -214,9 +257,19 @@ public class ImageProc
         0.123317f, 0.195346f, 0.123317f,
         0.077847f, 0.123317f, 0.077847f});
 
+    this.laplacian_4 = new Matrix(3, 3, new float[]{
+        0.0f, -1.0f, 0.0f, -1.0f, 4.0f, -1.0f, 0.0f, -1.0f, 0.0f});
+    this.laplacian_8 = new Matrix(3, 3, new float[]{
+        -1.0f, -1.0f,  -1.0f, -1.0f, 8.0f, -1.0f,  -1.0f, -1.0f, -1.0f});
+//    this.laplacian_8 = new Matrix(3, 3, new float[]{
+//        -0.5f, -1.0f,  -0.5f, -1.0f, 6.0f, -1.0f,  -0.5f, -1.0f, -0.5f});
+
+//    this.sobel_v = new Matrix(3, 3, new float[]{
+//        1.0f, 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, -2.0f, -1.0f});
+//    this.sobel_h = new Matrix(3, 3, new float[]{
+//        1.0f, 0.0f, -1.0f, 2.0f, 0.0f, -2.0f, 1.0f, 0.0f, -1.0f});
     this.sobel_v = new Matrix(3, 3, new float[]{
         1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f, -1.0f});
-    // sobel vertical
     this.sobel_h = new Matrix(3, 3, new float[]{
         1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f});
   }

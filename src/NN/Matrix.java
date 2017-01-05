@@ -548,13 +548,12 @@ public class Matrix
     return result;
   }
 
-  public int[][] getLocalMaxima()
+  public int[][] getLocalMaxima(int radius, float minimal, boolean is_sorted)
   {
     List<Float> maximas = new ArrayList<Float>();
     List<Integer> r_max = new ArrayList<Integer>();
     List<Integer> c_max = new ArrayList<Integer>();
 
-    final int radius = 4;
     final int len_r_loop = this.num_row;
     final int len_c_loop = this.num_col;
     for(int r = 0; r < len_r_loop; ++r)
@@ -563,7 +562,7 @@ public class Matrix
       for(int c = 0; c < len_c_loop; ++c)
       {
         final float val = this.data[row_start_out + c];
-        if(val < 0.5f)
+        if(val < minimal)
         {
           continue;
         }
@@ -577,7 +576,7 @@ public class Matrix
             for(int lc = -radius; lc <= radius; ++lc)
             {
               final int this_c = c + lc;
-              if(this_c >= 0 && this_c < len_r_loop && val < this.data[row_start + this_c])
+              if(this_c >= 0 && this_c < len_c_loop && val < this.data[row_start + this_c])
               {
                 is_max = false;
                 break;
@@ -620,5 +619,51 @@ public class Matrix
       result[id] = this.data[index[id][0] * this.num_col + index[id][1]];
     }
     return result;
+  }
+
+  public void thresholdOnSelf(float thres)
+  {
+    final int len = this.data.length;
+    for(int i = 0; i < len; ++i)
+    {
+      if(this.data[i] < thres)
+      {
+        this.data[i] = 0.0f;
+      }
+      else
+      {
+        this.data[i] = 1.0f;
+      }
+    }
+  }
+
+  public void erodeOnSelf(int radius, float thres)
+  {
+    final int nr_1 = this.num_row - radius;
+    final int nc_1 = this.num_col - radius;
+    float[] copy = Arrays.copyOf(this.data, this.data.length);
+    Arrays.fill(this.data, 0.0f);
+    for(int r = radius; r < nr_1; ++r)
+    {
+      for(int c = radius; c < nc_1; ++c)
+      {
+        boolean is_all_above = true;
+        for(int rr = -radius; rr <= radius && is_all_above; ++rr)
+        {
+          int rs = (rr + r) * this.num_col + c;
+          for(int cc = -radius; cc <= radius && is_all_above; ++cc)
+          {
+            if(copy[rs + cc] < thres)
+            {
+              is_all_above = false;
+            }
+          }
+        }
+        if(is_all_above)
+        {
+          this.data[c + r * this.num_col] = 1.0f;
+        }
+      }
+    }
   }
 }
