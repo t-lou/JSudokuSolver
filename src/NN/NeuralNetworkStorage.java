@@ -143,10 +143,11 @@ public class NeuralNetworkStorage
     try
     {
       File file = new File(filename);
-      if(!file.exists())
+      if(file.exists())
       {
-        file.createNewFile();
+        file.delete();
       }
+      file.createNewFile();
       FileOutputStream fop = new FileOutputStream(file);
       fop.write(bytes);
       fop.flush();

@@ -645,6 +645,7 @@ public class Matrix
     Arrays.fill(this.data, 0.0f);
     for(int r = radius; r < nr_1; ++r)
     {
+      final int r_s = r * this.num_col;
       for(int c = radius; c < nc_1; ++c)
       {
         boolean is_all_above = true;
@@ -661,7 +662,7 @@ public class Matrix
         }
         if(is_all_above)
         {
-          this.data[c + r * this.num_col] = 1.0f;
+          this.data[c + r_s] = copy[c + r_s];
         }
       }
     }

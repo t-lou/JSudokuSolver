@@ -14,7 +14,7 @@ public class Main
 
     // test digit recognition
 //    String path = "D:\\home\\workspace\\mnist\\";
-//    String path = "/home/tlou/workspace/mnist";
+//    String path = "/home/tlou/workspace/mnist/";
 //    String path_train_image = path + "train-images-idx3-ubyte";
 //    String path_train_label = path + "train-labels-idx1-ubyte";
 //    String path_valid_image = path + "t10k-images-idx3-ubyte";
@@ -24,7 +24,7 @@ public class Main
 //    String path_valid_image = path + "notMNIST_small_image";
 //    String path_valid_label = path + "notMNIST_small_label";
 //    Trainer trainer = new Trainer(path_train_image, path_train_label,
-//        path_valid_image, path_valid_label, 4, 400, 10, 0.00001f);
+//        path_valid_image, path_valid_label, 4, 400, 10, 0.0001f);
 //    for(int i = 0; i < 40; ++i)
 //    {
 //      System.out.println("round " + i);
@@ -72,9 +72,9 @@ public class Main
 //		solver.solve();
 
 //		// test total solver
-//    SupremeSolver ssolver = new SupremeSolver("/home/tlou/Downloads/cbhsudoku.png");
-		SupremeSolver ssolver = new SupremeSolver("D:\\home\\workspace\\cbhsudoku.png");
-		ssolver.preproc();
+    SupremeSolver ssolver = new SupremeSolver("/home/tlou/Downloads/cbhsudoku.png");
+//		SupremeSolver ssolver = new SupremeSolver("D:\\home\\workspace\\cbhsudoku.png");
+    ssolver.preproc();
 
     long end = System.currentTimeMillis();
     System.out.println("Took " + 0.001f * (float) (end - start) + " s");

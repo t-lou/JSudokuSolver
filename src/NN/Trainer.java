@@ -4,6 +4,7 @@ package NN;
 //import java.awt.*;
 //import java.awt.image.BufferedImage;
 //import java.io.File;
+
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -27,7 +28,7 @@ public class Trainer
 
   private byte[] rotateClockwise(byte[] image, int row, int col)
   {
-    assert(row * col == image.length);
+    assert (row * col == image.length);
     byte[] tmp = new byte[image.length];
 
     for(int r = 0; r < row; ++r)
@@ -100,10 +101,10 @@ public class Trainer
     int count = 0;
     for(int i = 0; i < this.data_valid.getNumData(); ++i)
     {
-//			this.network.forward(this.data_valid.getImage(i));
-      this.network.forward(this.permuteImage(this.data_valid.getImage(i),
-          ThreadLocalRandom.current().nextInt() % 8));
+      int perm_type = ThreadLocalRandom.current().nextInt(0, 8);
+      this.network.forward(this.permuteImage(this.data_train.getImage(i), perm_type));
       if(this.network.getResult() == this.data_valid.getLabel(i))
+//      if(this.network.getResult() == (perm_type % 4)) // for training orientation
       {
         ++count;
       }
@@ -118,10 +119,10 @@ public class Trainer
   {
     for(int i = 0; i < this.data_train.getNumData(); ++i)
     {
-//			this.network.forward(this.data_train.getImage(i));
-      this.network.forward(this.permuteImage(this.data_train.getImage(i),
-          ThreadLocalRandom.current().nextInt() % 8));
+      int perm_type = ThreadLocalRandom.current().nextInt(0, 8);
+      this.network.forward(this.permuteImage(this.data_train.getImage(i), perm_type));
       this.network.backward(this.data_train.getLabel(i));
+//      this.network.backward(perm_type % 4); // for training orientation
     }
     System.out.println("finished training");
   }
