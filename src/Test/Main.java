@@ -74,7 +74,7 @@ public class Main
 //		// test total solver
     SupremeSolver ssolver = new SupremeSolver("/home/tlou/Downloads/cbhsudoku.png");
 //		SupremeSolver ssolver = new SupremeSolver("D:\\home\\workspace\\cbhsudoku.png");
-    ssolver.preproc();
+    ssolver.process();
 
     long end = System.currentTimeMillis();
     System.out.println("Took " + 0.001f * (float) (end - start) + " s");

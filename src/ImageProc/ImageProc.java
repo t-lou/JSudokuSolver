@@ -26,6 +26,8 @@ public class ImageProc
       1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f, -1.0f});
   private static Matrix _sobel_h = new Matrix(3, 3, new float[]{
       1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f});
+  private int[][] _hough_maxima_index;
+  private float[] _hough_maxima_value;
 
   /**
    * save image to file for debugging
@@ -68,12 +70,12 @@ public class ImageProc
     return image;
   }
 
-  private static BufferedImage drawHoughPoint(BufferedImage image, Color color, int r, int the, int offset_r)
+  private static BufferedImage drawHoughPoint(BufferedImage image, Color color, int r, int the)
   {
     final int color_val = color.getRGB();
     final float cos_the = (float) Math.cos(Math.toRadians((double) the));
     final float sin_the = (float) Math.sin(Math.toRadians((double) the));
-    final float r_val = (float) (r + offset_r);
+    final float r_val = (float) r;
     final int nr = image.getHeight();
     final int nc = image.getWidth();
     if(Math.abs(cos_the) > Math.sqrt(0.5f))
@@ -213,14 +215,14 @@ public class ImageProc
   /**
    * some filters needed here
    */
-  public void filter()
+  public void extractLines()
   {
     Matrix diff = ImageProc.detectEdge(this._image.conv(this._gaussian_1_3, true));
     diff.normalizeOnSelf();
-    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "/tmp/tmp/diff.png");
+//    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "/tmp/tmp/diff.png");
 //    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "D:\\home\\workspace\\xtmp\\diff.png");
     diff.erodeOnSelf(1, 0.2f);
-    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "/tmp/tmp/erode.png");
+//    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "/tmp/tmp/erode.png");
 //    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "D:\\home\\workspace\\tmp\\erode.png");
     diff.setBoundary(0.0f);
     this._hough = this.transformHough(diff);
@@ -229,18 +231,25 @@ public class ImageProc
     this._hough.normalizeOnSelf();
 //    ImageProc.saveImage(ImageProc.matrixToImage(this.hough, 1.0f), "/tmp/tmp/hough.png");
 //    ImageProc.saveImage(ImageProc.matrixToImage(this.hough, 1.0f), "D:\\home\\workspace\\tmp\\hough.png");
-    int[][] index_max = this._hough.getLocalMaxima(10, 0.6f, true);
-    float[] hough_local_max = this._hough.getElement(index_max);
-    BufferedImage image = ImageProc.matrixToImage(this._image, 1.0f);
-//    for(int i = 0; i < index_max.length; ++i)
-//    {
+    this._hough_maxima_index = this._hough.getLocalMaxima(10, 0.6f, true);
+    this._hough_maxima_value = this._hough.getElement(this._hough_maxima_index);
+    final int length = this._hough_maxima_index.length;
+//    BufferedImage image = ImageProc.matrixToImage(this._image, 1.0f);
+    for(int i = 0; i < length; ++i)
+    {
+      this._hough_maxima_index[i][0] += this._offset_hough_r;
+      // correct negative r
+      if(this._hough_maxima_index[i][0] < 0)
+      {
+        this._hough_maxima_index[i][1] -= 180;
+        this._hough_maxima_index[i][0] = -this._hough_maxima_index[i][0];
+      }
 //      System.out.println(i + ": " + index_max[i][0] + " " + index_max[i][1]
 //          + ": " + hough_local_max[i]);
-//      image = ImageProc.drawHoughPoint(image, Color.red, index_max[i][0], index_max[i][1],
-//          this.offset_hough_r);
+//      image = ImageProc.drawHoughPoint(image, Color.red, index_max[i][0], index_max[i][1]);
 //      ImageProc.saveImage(image, "/tmp/tmp/" + i + ".png");
 //      ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\" + i + ".png");
-//    }
+    }
 //    ImageProc.saveImage(image, "/tmp/tmp/lines.png");
 //    ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\lines.png");
 //    System.out.println("there are " + index_max.length + " local maximas");
@@ -266,6 +275,16 @@ public class ImageProc
       }
     }
     this._image = new Matrix(height, width, data);
+  }
+
+  public float[] getHoughMaximaValue()
+  {
+    return this._hough_maxima_value;
+  }
+
+  public int[][] getHoughMaximaIndex()
+  {
+    return this._hough_maxima_index;
   }
 
   public ImageProc()
