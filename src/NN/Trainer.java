@@ -10,20 +10,20 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Trainer
 {
-  private DataSource data_train;
-  private DataSource data_valid;
-  private Network network;
-  private int[] dim;
+  private DataSource _data_train;
+  private DataSource _data_valid;
+  private Network _network;
+  private int[] _dim;
 
   public Trainer(String path_train_image, String path_train_label,
                  String path_valid_image, String path_valid_label,
                  int num_hidden_layer, int num_hidden_unit, int num_output, float stepsize)
   {
-    this.data_train = new DataSource(path_train_image, path_train_label);
-    this.data_valid = new DataSource(path_valid_image, path_valid_label);
-    this.network = new Network(num_hidden_layer, num_hidden_unit,
-        this.data_train.getDim(), num_output, stepsize);
-    this.dim = new int[]{this.data_train.getDim0(), this.data_train.getDim1()};
+    this._data_train = new DataSource(path_train_image, path_train_label);
+    this._data_valid = new DataSource(path_valid_image, path_valid_label);
+    this._network = new Network(num_hidden_layer, num_hidden_unit,
+        this._data_train.getDim(), num_output, stepsize);
+    this._dim = new int[]{this._data_train.getDim0(), this._data_train.getDim1()};
   }
 
   private byte[] rotateClockwise(byte[] image, int row, int col)
@@ -46,12 +46,12 @@ public class Trainer
 //  private int count;
 //  private void saveImage(byte[] bytes)
 //  {
-//    BufferedImage image = new BufferedImage(this.data_train.getDim0(),
-//        this.data_train.getDim1(), BufferedImage.TYPE_3BYTE_BGR);
-//    for(int r = 0; r < this.data_train.getDim0(); ++r)
+//    BufferedImage image = new BufferedImage(this._data_train.getDim0(),
+//        this._data_train.getDim1(), BufferedImage.TYPE_3BYTE_BGR);
+//    for(int r = 0; r < this._data_train.getDim0(); ++r)
 //    {
-//      int row_start = this.data_train.getDim1() * r;
-//      for(int c = 0; c < this.data_train.getDim1(); ++c)
+//      int row_start = this._data_train.getDim1() * r;
+//      for(int c = 0; c < this._data_train.getDim1(); ++c)
 //      {
 //        int val = (0xFF & bytes[c + row_start]);
 //        image.setRGB(c, r, new Color(val, val, val).getRGB());
@@ -72,8 +72,8 @@ public class Trainer
     final boolean is_to_inverse = type < 4;
     final int num_rot = type % 4;
     byte[] result = Arrays.copyOf(image, image.length);
-    int nr = this.dim[0];
-    int nc = this.dim[1];
+    int nr = this._dim[0];
+    int nc = this._dim[1];
     for(int r = 0; r < num_rot; ++r)
     {
       result = this.rotateClockwise(result, nr, nc);
@@ -99,17 +99,17 @@ public class Trainer
   public void valid()
   {
     int count = 0;
-    for(int i = 0; i < this.data_valid.getNumData(); ++i)
+    for(int i = 0; i < this._data_valid.getNumData(); ++i)
     {
       int perm_type = ThreadLocalRandom.current().nextInt(0, 8);
-      this.network.forward(this.permuteImage(this.data_train.getImage(i), perm_type));
-      if(this.network.getResult() == this.data_valid.getLabel(i))
-//      if(this.network.getResult() == (perm_type % 4)) // for training orientation
+      this._network.forward(this.permuteImage(this._data_train.getImage(i), perm_type));
+      if(this._network.getResult() == this._data_valid.getLabel(i))
+//      if(this._network.getResult() == (perm_type % 4)) // for training orientation
       {
         ++count;
       }
     }
-    System.out.println(count + ":" + this.data_valid.getNumData());
+    System.out.println(count + ":" + this._data_valid.getNumData());
   }
 
   /**
@@ -117,12 +117,12 @@ public class Trainer
    */
   public void train()
   {
-    for(int i = 0; i < this.data_train.getNumData(); ++i)
+    for(int i = 0; i < this._data_train.getNumData(); ++i)
     {
       int perm_type = ThreadLocalRandom.current().nextInt(0, 8);
-      this.network.forward(this.permuteImage(this.data_train.getImage(i), perm_type));
-      this.network.backward(this.data_train.getLabel(i));
-//      this.network.backward(perm_type % 4); // for training orientation
+      this._network.forward(this.permuteImage(this._data_train.getImage(i), perm_type));
+      this._network.backward(this._data_train.getLabel(i));
+//      this._network.backward(perm_type % 4); // for training orientation
     }
     System.out.println("finished training");
   }
@@ -134,7 +134,7 @@ public class Trainer
    */
   public Network getNetwork()
   {
-    return this.network;
+    return this._network;
   }
 
   /**
@@ -144,6 +144,6 @@ public class Trainer
    */
   public void SetNetwork(Network network)
   {
-    this.network = network;
+    this._network = network;
   }
 }

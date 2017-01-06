@@ -11,20 +11,20 @@ import NN.Matrix;
 
 public class ImageProc
 {
-  private Matrix image;
-  private Matrix hough;
-  private int offset_hough_r;
-  private static Matrix gaussian_1_3 = new Matrix(3, 3, new float[]{
+  private Matrix _image;
+  private Matrix _hough;
+  private int _offset_hough_r;
+  private static Matrix _gaussian_1_3 = new Matrix(3, 3, new float[]{
       0.077847f, 0.123317f, 0.077847f,
       0.123317f, 0.195346f, 0.123317f,
       0.077847f, 0.123317f, 0.077847f});
-  private static Matrix laplacian_4 = new Matrix(3, 3, new float[]{
+  private static Matrix _laplacian_4 = new Matrix(3, 3, new float[]{
       0.0f, -1.0f, 0.0f, -1.0f, 4.0f, -1.0f, 0.0f, -1.0f, 0.0f});
-  private static Matrix laplacian_8 = new Matrix(3, 3, new float[]{
+  private static Matrix _laplacian_8 = new Matrix(3, 3, new float[]{
       -1.0f, -1.0f, -1.0f, -1.0f, 8.0f, -1.0f, -1.0f, -1.0f, -1.0f});
-  private static Matrix sobel_v = new Matrix(3, 3, new float[]{
+  private static Matrix _sobel_v = new Matrix(3, 3, new float[]{
       1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f, -1.0f});
-  private static Matrix sobel_h = new Matrix(3, 3, new float[]{
+  private static Matrix _sobel_h = new Matrix(3, 3, new float[]{
       1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f, -1.0f});
 
   /**
@@ -161,7 +161,7 @@ public class ImageProc
         ++index;
       }
     }
-    this.offset_hough_r = min_r;
+    this._offset_hough_r = min_r;
     return new Matrix(max_r - min_r, 180, hough_values);
   }
 
@@ -200,8 +200,8 @@ public class ImageProc
     final int num_row = image.getNumRow();
     final int num_col = image.getNumCol();
     final int length = num_row * num_col;
-    final float[] diff_h = image.conv(ImageProc.sobel_h, false).getData();
-    final float[] diff_v = image.conv(ImageProc.sobel_v, false).getData();
+    final float[] diff_h = image.conv(ImageProc._sobel_h, false).getData();
+    final float[] diff_v = image.conv(ImageProc._sobel_v, false).getData();
     float[] diff = new float[length];
     for(int i = 0; i < length; ++i)
     {
@@ -215,7 +215,7 @@ public class ImageProc
    */
   public void filter()
   {
-    Matrix diff = ImageProc.detectEdge(this.image.conv(this.gaussian_1_3, true));
+    Matrix diff = ImageProc.detectEdge(this._image.conv(this._gaussian_1_3, true));
     diff.normalizeOnSelf();
     ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "/tmp/tmp/diff.png");
 //    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "D:\\home\\workspace\\xtmp\\diff.png");
@@ -223,27 +223,27 @@ public class ImageProc
     ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "/tmp/tmp/erode.png");
 //    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "D:\\home\\workspace\\tmp\\erode.png");
     diff.setBoundary(0.0f);
-    this.hough = this.transformHough(diff);
-    this.hough.normalizeOnSelf();
-    this.hough = this.hough.conv(this.gaussian_1_3, true);
-    this.hough.normalizeOnSelf();
+    this._hough = this.transformHough(diff);
+    this._hough.normalizeOnSelf();
+    this._hough = this._hough.conv(this._gaussian_1_3, true);
+    this._hough.normalizeOnSelf();
 //    ImageProc.saveImage(ImageProc.matrixToImage(this.hough, 1.0f), "/tmp/tmp/hough.png");
 //    ImageProc.saveImage(ImageProc.matrixToImage(this.hough, 1.0f), "D:\\home\\workspace\\tmp\\hough.png");
-    int[][] index_max = this.hough.getLocalMaxima(10, 0.6f, true);
-    float[] hough_local_max = this.hough.getElement(index_max);
-    BufferedImage image = ImageProc.matrixToImage(this.image, 1.0f);
-    for(int i = 0; i < index_max.length; ++i)
-    {
-      System.out.println(i + ": " + index_max[i][0] + " " + index_max[i][1]
-          + ": " + hough_local_max[i]);
-      image = ImageProc.drawHoughPoint(image, Color.red, index_max[i][0], index_max[i][1],
-          this.offset_hough_r);
+    int[][] index_max = this._hough.getLocalMaxima(10, 0.6f, true);
+    float[] hough_local_max = this._hough.getElement(index_max);
+    BufferedImage image = ImageProc.matrixToImage(this._image, 1.0f);
+//    for(int i = 0; i < index_max.length; ++i)
+//    {
+//      System.out.println(i + ": " + index_max[i][0] + " " + index_max[i][1]
+//          + ": " + hough_local_max[i]);
+//      image = ImageProc.drawHoughPoint(image, Color.red, index_max[i][0], index_max[i][1],
+//          this.offset_hough_r);
 //      ImageProc.saveImage(image, "/tmp/tmp/" + i + ".png");
 //      ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\" + i + ".png");
-    }
+//    }
 //    ImageProc.saveImage(image, "/tmp/tmp/lines.png");
 //    ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\lines.png");
-    System.out.println("there are " + index_max.length + " local maximas");
+//    System.out.println("there are " + index_max.length + " local maximas");
   }
 
   /**
@@ -265,7 +265,7 @@ public class ImageProc
             + 0.114f * (float) color.getBlue() + 0.587f * (float) color.getGreen()) / 255.0f;
       }
     }
-    this.image = new Matrix(height, width, data);
+    this._image = new Matrix(height, width, data);
   }
 
   public ImageProc()

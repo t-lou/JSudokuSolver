@@ -4,16 +4,16 @@ import java.util.Arrays;
 
 public class Network
 {
-  private int num_hidden_layer;
-  private int num_input;
-  private int num_output;
-  private float stepsize;
-  private float stepsize_base;
-  private int count_back_prop;
-  private int num_iter_to_damp_stepsize;
-  private Matrix[] weights;
-  private Matrix[] interpretations;
-  private Matrix[] activations;
+  private int _num_hidden_layer;
+  private int _num_input;
+  private int _num_output;
+  private float _stepsize;
+  private float _stepsize_base;
+  private int _count_back_prop;
+  private int _num_iter_to_damp_stepsize;
+  private Matrix[] _weights;
+  private Matrix[] _interpretations;
+  private Matrix[] _activations;
 
   public Network()
   {
@@ -22,27 +22,27 @@ public class Network
   public Network(int num_hidden_layer, int num_hidden_unit,
                  int num_input, int num_output, float stepsize)
   {
-    this.num_hidden_layer = num_hidden_layer;
-    this.num_input = num_input;
-    this.num_output = num_output;
-    this.weights = new Matrix[num_hidden_layer + 1];
-    this.stepsize_base = stepsize;
-    this.stepsize = this.stepsize_base;
-    this.count_back_prop = 0;
+    this._num_hidden_layer = num_hidden_layer;
+    this._num_input = num_input;
+    this._num_output = num_output;
+    this._weights = new Matrix[num_hidden_layer + 1];
+    this._stepsize_base = stepsize;
+    this._stepsize = this._stepsize_base;
+    this._count_back_prop = 0;
 
     // last row is for bias
-    this.weights[0] = new Matrix(num_hidden_unit, num_input + 1, true);
+    this._weights[0] = new Matrix(num_hidden_unit, num_input + 1, true);
     for(int i = 1; i < num_hidden_layer; ++i)
     {
-      this.weights[i] = new Matrix(num_hidden_unit, num_hidden_unit + 1, true);
+      this._weights[i] = new Matrix(num_hidden_unit, num_hidden_unit + 1, true);
     }
-    this.weights[num_hidden_layer] = new Matrix(num_output, num_hidden_unit + 1, true);
-    this.num_iter_to_damp_stepsize = 0;
-    for(Matrix w : this.weights)
+    this._weights[num_hidden_layer] = new Matrix(num_output, num_hidden_unit + 1, true);
+    this._num_iter_to_damp_stepsize = 0;
+    for(Matrix w : this._weights)
     {
-      this.num_iter_to_damp_stepsize += w.getNumCol() * w.getNumRow();
+      this._num_iter_to_damp_stepsize += w.getNumCol() * w.getNumRow();
     }
-    this.num_iter_to_damp_stepsize *= 2;
+    this._num_iter_to_damp_stepsize *= 2;
   }
 
   /**
@@ -85,25 +85,25 @@ public class Network
    */
   public void forward(byte[] feature)
   {
-    if(this.interpretations == null)
+    if(this._interpretations == null)
     {
-      this.interpretations = new Matrix[this.num_hidden_layer + 1];
+      this._interpretations = new Matrix[this._num_hidden_layer + 1];
     }
-    if(this.activations == null)
+    if(this._activations == null)
     {
-      this.activations = new Matrix[this.num_hidden_layer + 1];
+      this._activations = new Matrix[this._num_hidden_layer + 1];
     }
-    this.activations[0] = new Matrix(this.num_input, 1, this.normalize(feature));
-    for(int idl = 0; idl <= this.num_hidden_layer; ++idl)
+    this._activations[0] = new Matrix(this._num_input, 1, this.normalize(feature));
+    for(int idl = 0; idl <= this._num_hidden_layer; ++idl)
     {
-      this.interpretations[idl] = this.weights[idl].multiply(
-          this.activations[idl].appendAsVecBias());
-      if(idl < this.num_hidden_layer)
+      this._interpretations[idl] = this._weights[idl].multiply(
+          this._activations[idl].appendAsVecBias());
+      if(idl < this._num_hidden_layer)
       {
-        this.activations[idl + 1] = this.interpretations[idl].relu();
+        this._activations[idl + 1] = this._interpretations[idl].relu();
       }
     }
-    this.interpretations[this.num_hidden_layer].softmaxAsVecOnSelf();
+    this._interpretations[this._num_hidden_layer].softmaxAsVecOnSelf();
   }
 
   /**
@@ -113,31 +113,31 @@ public class Network
    */
   public void backward(int result)
   {
-    Matrix diff = new Matrix(this.num_output, 1,
-        this.interpretations[this.num_hidden_layer].getData());
+    Matrix diff = new Matrix(this._num_output, 1,
+        this._interpretations[this._num_hidden_layer].getData());
     diff.addElement(result, 0, -1.0f);
-    for(int idl = this.num_hidden_layer; idl >= 0; --idl)
+    for(int idl = this._num_hidden_layer; idl >= 0; --idl)
     {
-      if(idl < this.num_hidden_layer)
+      if(idl < this._num_hidden_layer)
       {
-        diff.multiplyElemWiseOnSelf(this.interpretations[idl].reluDer());
+        diff.multiplyElemWiseOnSelf(this._interpretations[idl].reluDer());
       }
-      Matrix delta = diff.ger(this.activations[idl].appendAsVecBias());
+      Matrix delta = diff.ger(this._activations[idl].appendAsVecBias());
       if(idl > 0)
       {
         diff.conjAsVecOnSelf();
-        diff = this.weights[idl].multiplyLeft(diff);
+        diff = this._weights[idl].multiplyLeft(diff);
         diff = new Matrix(diff.getNumCol() - 1, 1,
             Arrays.copyOf(diff.getData(), diff.getNumCol() - 1));
       }
-      this.weights[idl].addOnSelf(delta, -this.stepsize);
+      this._weights[idl].addOnSelf(delta, -this._stepsize);
     }
 
-    ++this.count_back_prop;
-    if(this.count_back_prop >= this.num_iter_to_damp_stepsize)
+    ++this._count_back_prop;
+    if(this._count_back_prop >= this._num_iter_to_damp_stepsize)
     {
-      this.stepsize *= 0.5f;
-      this.count_back_prop = 0;
+      this._stepsize *= 0.5f;
+      this._count_back_prop = 0;
     }
   }
 
@@ -150,8 +150,8 @@ public class Network
   {
     float max = -1.0f;
     int id_max = -1;
-    float[] eval = this.interpretations[this.num_hidden_layer].getData();
-    for(int i = 0; i < this.num_output; ++i)
+    float[] eval = this._interpretations[this._num_hidden_layer].getData();
+    for(int i = 0; i < this._num_output; ++i)
     {
       if(max < eval[i])
       {
@@ -170,8 +170,8 @@ public class Network
   public float getFakeEntropy()
   {
     float err = 0.0f;
-    float[] eval = this.interpretations[this.num_hidden_layer].getData();
-    for(int i = 0; i < this.num_output; ++i)
+    float[] eval = this._interpretations[this._num_hidden_layer].getData();
+    for(int i = 0; i < this._num_output; ++i)
     {
       if(eval[i] < 0.5f)
       {
@@ -190,7 +190,7 @@ public class Network
    */
   public int getNumLayer()
   {
-    return this.weights.length;
+    return this._weights.length;
   }
 
   /**
@@ -201,8 +201,8 @@ public class Network
    */
   public Matrix getLayer(int id)
   {
-    assert (id < this.weights.length);
-    return this.weights[id];
+    assert (id < this._weights.length);
+    return this._weights[id];
   }
 
   /**
@@ -213,8 +213,8 @@ public class Network
    */
   public void setDimensionality(int num_in, int num_out)
   {
-    this.num_input = num_in;
-    this.num_output = num_out;
+    this._num_input = num_in;
+    this._num_output = num_out;
   }
 
   /**
@@ -230,13 +230,13 @@ public class Network
       assert (mats[i - 1].getNumRow() == mats[i].getNumCol() + 1);
     }
 
-    this.num_input = mats[0].getNumCol() - 1;
-    this.num_output = mats[mats.length - 1].getNumRow();
-    this.num_hidden_layer = mats.length - 1;
-    this.weights = new Matrix[mats.length];
+    this._num_input = mats[0].getNumCol() - 1;
+    this._num_output = mats[mats.length - 1].getNumRow();
+    this._num_hidden_layer = mats.length - 1;
+    this._weights = new Matrix[mats.length];
     for(int i = 0; i < mats.length; ++i)
     {
-      this.weights[i] = new Matrix(mats[i]);
+      this._weights[i] = new Matrix(mats[i]);
     }
   }
 }

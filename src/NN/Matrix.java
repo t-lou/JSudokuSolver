@@ -8,8 +8,8 @@ import java.util.Random;
 
 public class Matrix
 {
-  private int num_row, num_col;
-  private float[] data;
+  private int _num_row, _num_col;
+  private float[] _data;
 
   public Matrix()
   {
@@ -18,7 +18,7 @@ public class Matrix
 
   public Matrix(Matrix mat)
   {
-    this(mat.num_row, mat.num_col, mat.data, false);
+    this(mat._num_row, mat._num_col, mat._data, false);
   }
 
   public Matrix(int num_row, int num_col)
@@ -28,16 +28,16 @@ public class Matrix
 
   public Matrix(int num_row, int num_col, boolean is_random)
   {
-    this.data = new float[num_row * num_col];
-    this.num_col = num_col;
-    this.num_row = num_row;
+    this._data = new float[num_row * num_col];
+    this._num_col = num_col;
+    this._num_row = num_row;
     if(is_random)
     {
       Random rand = new Random();
       float range = (float) (Math.sqrt(6.0) / (float) Math.sqrt((double) (num_col + num_row)));
-      for(int i = 0; i < this.data.length; ++i)
+      for(int i = 0; i < this._data.length; ++i)
       {
-        this.data[i] = (rand.nextFloat() - 0.5f) * range;
+        this._data[i] = (rand.nextFloat() - 0.5f) * range;
       }
     }
   }
@@ -51,16 +51,16 @@ public class Matrix
   {
     if(is_add_bias)
     {
-      this.num_row = num_row + 1;
+      this._num_row = num_row + 1;
     }
     else
     {
-      this.num_row = num_row;
+      this._num_row = num_row;
     }
-    this.num_col = num_col;
-    this.data = new float[this.num_col * this.num_row];
-    Arrays.fill(this.data, 1.0f);
-    System.arraycopy(values, 0, this.data, 0, num_row * num_col);
+    this._num_col = num_col;
+    this._data = new float[this._num_col * this._num_row];
+    Arrays.fill(this._data, 1.0f);
+    System.arraycopy(values, 0, this._data, 0, num_row * num_col);
   }
 
   /**
@@ -70,12 +70,12 @@ public class Matrix
    */
   public void multiplyElemWiseOnSelf(Matrix another)
   {
-    assert (this.num_row == another.num_row);
-    assert (this.num_col == another.num_col);
-    final int len = this.data.length;
+    assert (this._num_row == another._num_row);
+    assert (this._num_col == another._num_col);
+    final int len = this._data.length;
     for(int i = 0; i < len; ++i)
     {
-      this.data[i] *= another.data[i];
+      this._data[i] *= another._data[i];
     }
   }
 
@@ -88,15 +88,15 @@ public class Matrix
    */
   public Matrix ger(Matrix vec_b)
   {
-    assert (this.num_col == 1);
-    assert (vec_b.num_col == 1);
-    Matrix result = new Matrix(this.num_row, vec_b.num_row);
-    for(int r = 0; r < this.num_row; ++r)
+    assert (this._num_col == 1);
+    assert (vec_b._num_col == 1);
+    Matrix result = new Matrix(this._num_row, vec_b._num_row);
+    for(int r = 0; r < this._num_row; ++r)
     {
-      int row_start = r * vec_b.num_row;
-      for(int c = 0; c < vec_b.num_row; ++c)
+      int row_start = r * vec_b._num_row;
+      for(int c = 0; c < vec_b._num_row; ++c)
       {
-        result.data[row_start + c] = this.data[r] * vec_b.data[c];
+        result._data[row_start + c] = this._data[r] * vec_b._data[c];
       }
     }
     return result;
@@ -110,12 +110,12 @@ public class Matrix
    */
   public void addOnSelf(Matrix delta, float scale)
   {
-    assert (this.num_col == delta.num_col);
-    assert (this.num_row == delta.num_row);
-    final int len = this.data.length;
+    assert (this._num_col == delta._num_col);
+    assert (this._num_row == delta._num_row);
+    final int len = this._data.length;
     for(int i = 0; i < len; ++i)
     {
-      this.data[i] += delta.data[i] * scale;
+      this._data[i] += delta._data[i] * scale;
     }
   }
 
@@ -127,8 +127,8 @@ public class Matrix
    */
   public Matrix multiply(Matrix another)
   {
-    assert (this.num_col == another.num_row);
-    final int num_row = this.num_row;
+    assert (this._num_col == another._num_row);
+    final int num_row = this._num_row;
     final int num_col = another.getNumCol();
     final int num_dua = another.getNumRow();
     Matrix result = new Matrix(num_row, num_col);
@@ -141,9 +141,9 @@ public class Matrix
         float val = 0.0f;
         for(int i = 0; i < num_dua; ++i)
         {
-          val += this.data[row_start + i] * another.data[i];
+          val += this._data[row_start + i] * another._data[i];
         }
-        result.data[r] = val;
+        result._data[r] = val;
       }
     }
     else if(num_row == 1)
@@ -155,9 +155,9 @@ public class Matrix
         float val = 0.0f;
         for(int i = 0; i < num_dua; ++i)
         {
-          val += this.data[i] * another.data[col_start[i] + c];
+          val += this._data[i] * another._data[col_start[i] + c];
         }
-        result.data[c] = val;
+        result._data[c] = val;
       }
     }
     else
@@ -172,9 +172,9 @@ public class Matrix
           float val = 0.0f;
           for(int i = 0; i < num_dua; ++i)
           {
-            val += this.data[row_start + i] * another.data[col_start[i] + c];
+            val += this._data[row_start + i] * another._data[col_start[i] + c];
           }
-          result.data[col_start[r] + c] = val;
+          result._data[col_start[r] + c] = val;
         }
       }
     }
@@ -189,8 +189,8 @@ public class Matrix
    */
   public Matrix multiplyLeft(Matrix another)
   {
-    assert (another.num_col == another.num_row);
-    final int num_row = another.num_row;
+    assert (another._num_col == another._num_row);
+    final int num_row = another._num_row;
     final int num_col = this.getNumCol();
     final int num_dua = this.getNumRow();
     Matrix result = new Matrix(num_row, num_col);
@@ -201,9 +201,9 @@ public class Matrix
         float val = 0.0f;
         for(int i = 0, col_start = c; i < num_dua; ++i, col_start += num_col)
         {
-          val += another.data[i] * this.data[col_start];
+          val += another._data[i] * this._data[col_start];
         }
-        result.data[row_start + c] = val;
+        result._data[row_start + c] = val;
       }
     }
     return result;
@@ -216,13 +216,13 @@ public class Matrix
    */
   public Matrix relu()
   {
-    Matrix result = new Matrix(this.num_row, this.num_col, this.data);
-    final int len = result.data.length;
+    Matrix result = new Matrix(this._num_row, this._num_col, this._data);
+    final int len = result._data.length;
     for(int i = 0; i < len; ++i)
     {
-      if(result.data[i] < 0.0f)
+      if(result._data[i] < 0.0f)
       {
-        result.data[i] = 0.0f;
+        result._data[i] = 0.0f;
       }
     }
     return result;
@@ -235,17 +235,17 @@ public class Matrix
    */
   public Matrix reluDer()
   {
-    Matrix result = new Matrix(this.num_row, this.num_col, this.data);
-    final int len = result.data.length;
+    Matrix result = new Matrix(this._num_row, this._num_col, this._data);
+    final int len = result._data.length;
     for(int i = 0; i < len; ++i)
     {
-      if(result.data[i] >= 0.0f)
+      if(result._data[i] >= 0.0f)
       {
-        result.data[i] = 1.0f;
+        result._data[i] = 1.0f;
       }
       else
       {
-        result.data[i] = 0.0f;
+        result._data[i] = 0.0f;
       }
     }
     return result;
@@ -256,17 +256,17 @@ public class Matrix
    */
   public void softmaxAsVecOnSelf()
   {
-    assert (this.num_row == 1 || this.num_col == 1);
+    assert (this._num_row == 1 || this._num_col == 1);
     float sum = 0.0f;
-    final int len = this.data.length;
+    final int len = this._data.length;
     for(int i = 0; i < len; ++i)
     {
-      this.data[i] = (float) Math.exp((double) this.data[i]);
-      sum += this.data[i];
+      this._data[i] = (float) Math.exp((double) this._data[i]);
+      sum += this._data[i];
     }
     for(int i = 0; i < len; ++i)
     {
-      this.data[i] /= sum;
+      this._data[i] /= sum;
     }
   }
 
@@ -275,10 +275,10 @@ public class Matrix
    */
   public void conjAsVecOnSelf()
   {
-    assert (this.num_row == 1 || this.num_col == 1);
-    int num = this.num_row;
-    this.num_row = this.num_col;
-    this.num_col = num;
+    assert (this._num_row == 1 || this._num_col == 1);
+    int num = this._num_row;
+    this._num_row = this._num_col;
+    this._num_col = num;
   }
 
   /**
@@ -290,9 +290,9 @@ public class Matrix
    */
   public void addElement(int row, int col, float delta)
   {
-    assert (row < this.num_row);
-    assert (col < this.num_col);
-    this.data[row * this.num_col + col] += delta;
+    assert (row < this._num_row);
+    assert (col < this._num_col);
+    this._data[row * this._num_col + col] += delta;
   }
 
   /**
@@ -302,8 +302,8 @@ public class Matrix
    */
   public Matrix appendAsVecBias()
   {
-    assert (this.num_col == 1);
-    return new Matrix(this.num_row, this.num_col, this.data, true);
+    assert (this._num_col == 1);
+    return new Matrix(this._num_row, this._num_col, this._data, true);
   }
 
   /**
@@ -313,7 +313,7 @@ public class Matrix
    */
   public float[] getData()
   {
-    return this.data;
+    return this._data;
   }
 
   /**
@@ -323,7 +323,7 @@ public class Matrix
    */
   public int getNumCol()
   {
-    return this.num_col;
+    return this._num_col;
   }
 
   /**
@@ -333,7 +333,7 @@ public class Matrix
    */
   public int getNumRow()
   {
-    return this.num_row;
+    return this._num_row;
   }
 
   private int[] genArithmeticSequence(int len, int diff)
@@ -350,7 +350,7 @@ public class Matrix
 
   private int[] genColStart()
   {
-    return this.genArithmeticSequence(this.num_col, this.num_row);
+    return this.genArithmeticSequence(this._num_col, this._num_row);
   }
 
   /**
@@ -361,14 +361,14 @@ public class Matrix
    */
   public Matrix conv(Matrix kernel, boolean is_smoothing)
   {
-    Matrix result = new Matrix(this.num_row, this.num_col);
-    final int krr = kernel.num_row / 2;
-    final int krc = kernel.num_col / 2;
+    Matrix result = new Matrix(this._num_row, this._num_col);
+    final int krr = kernel._num_row / 2;
+    final int krc = kernel._num_col / 2;
 
-    final int num_row = this.num_row;
-    final int num_col = this.num_col;
-    final int num_row_kernel = kernel.num_row;
-    final int num_col_kernel = kernel.num_col;
+    final int num_row = this._num_row;
+    final int num_col = this._num_col;
+    final int num_row_kernel = kernel._num_row;
+    final int num_col_kernel = kernel._num_col;
     int idx = 0;
     for(int ir = 0; ir < num_row; ++ir)
     {
@@ -388,8 +388,8 @@ public class Matrix
             int rc = c + ikc;
             if(rr >= 0 && rc >= 0 && rr < num_row && rc < num_col)
             {
-              val += kernel.data[idx_k] * this.data[row_start + rc];
-              weight += kernel.data[idx_k];
+              val += kernel._data[idx_k] * this._data[row_start + rc];
+              weight += kernel._data[idx_k];
             }
             ++idx_k;
           }
@@ -398,7 +398,7 @@ public class Matrix
         {
           val /= weight;
         }
-        result.data[idx] = val;
+        result._data[idx] = val;
         ++idx;
       }
     }
@@ -412,13 +412,13 @@ public class Matrix
    */
   public void addAbsElemWiseOnSelf(Matrix mat)
   {
-    assert (mat.num_col == this.num_col);
-    assert (mat.num_row == this.num_row);
+    assert (mat._num_col == this._num_col);
+    assert (mat._num_row == this._num_row);
 
-    final int len = this.data.length;
+    final int len = this._data.length;
     for(int i = 0; i < len; ++i)
     {
-      this.data[i] = Math.abs(this.data[i]) + Math.abs(mat.data[i]);
+      this._data[i] = Math.abs(this._data[i]) + Math.abs(mat._data[i]);
     }
   }
 
@@ -433,39 +433,39 @@ public class Matrix
     // upper
     for(int r = 0; r < b; ++r)
     {
-      final int start = r * this.num_col;
-      for(int c = 0; c < this.num_col; ++c)
+      final int start = r * this._num_col;
+      for(int c = 0; c < this._num_col; ++c)
       {
-        this.data[start + c] = val;
+        this._data[start + c] = val;
       }
     }
     // bottom
-    for(int r = this.num_row - 1; r >= this.num_row - 1 - b; --r)
+    for(int r = this._num_row - 1; r >= this._num_row - 1 - b; --r)
     {
-      final int start = r * this.num_col;
-      for(int c = 0; c < this.num_col; ++c)
+      final int start = r * this._num_col;
+      for(int c = 0; c < this._num_col; ++c)
       {
-        this.data[start + c] = val;
+        this._data[start + c] = val;
       }
     }
     // left
     for(int c = 0; c < b; ++c)
     {
       int start = c;
-      for(int r = 0; r < this.num_row; ++r)
+      for(int r = 0; r < this._num_row; ++r)
       {
-        this.data[start] = val;
-        start += this.num_col;
+        this._data[start] = val;
+        start += this._num_col;
       }
     }
     // right
-    for(int c = this.num_col - 1; c >= this.num_col - 1 - b; --c)
+    for(int c = this._num_col - 1; c >= this._num_col - 1 - b; --c)
     {
       int start = c;
-      for(int r = 0; r < this.num_row; ++r)
+      for(int r = 0; r < this._num_row; ++r)
       {
-        this.data[start] = val;
-        start += this.num_col;
+        this._data[start] = val;
+        start += this._num_col;
       }
     }
   }
@@ -475,11 +475,11 @@ public class Matrix
    */
   public void normalizeOnSelf()
   {
-    float min = this.data[0];
-    float max = this.data[0];
-    final int len = this.data.length;
+    float min = this._data[0];
+    float max = this._data[0];
+    final int len = this._data.length;
     float scale;
-    for(float f : this.data)
+    for(float f : this._data)
     {
       if(min > f)
       {
@@ -493,7 +493,7 @@ public class Matrix
     scale = 1.0f / (max - min);
     for(int i = 0; i < len; ++i)
     {
-      this.data[i] = (this.data[i] - min) * scale;
+      this._data[i] = (this._data[i] - min) * scale;
     }
   }
 
@@ -554,14 +554,14 @@ public class Matrix
     List<Integer> r_max = new ArrayList<Integer>();
     List<Integer> c_max = new ArrayList<Integer>();
 
-    final int len_r_loop = this.num_row;
-    final int len_c_loop = this.num_col;
+    final int len_r_loop = this._num_row;
+    final int len_c_loop = this._num_col;
     for(int r = 0; r < len_r_loop; ++r)
     {
-      final int row_start_out = r * this.num_col;
+      final int row_start_out = r * this._num_col;
       for(int c = 0; c < len_c_loop; ++c)
       {
-        final float val = this.data[row_start_out + c];
+        final float val = this._data[row_start_out + c];
         if(val < minimal)
         {
           continue;
@@ -572,11 +572,11 @@ public class Matrix
           final int this_r = r + lr;
           if(this_r >= 0 && this_r < len_r_loop)
           {
-            final int row_start = this_r * this.num_col;
+            final int row_start = this_r * this._num_col;
             for(int lc = -radius; lc <= radius; ++lc)
             {
               final int this_c = c + lc;
-              if(this_c >= 0 && this_c < len_c_loop && val < this.data[row_start + this_c])
+              if(this_c >= 0 && this_c < len_c_loop && val < this._data[row_start + this_c])
               {
                 is_max = false;
                 break;
@@ -616,42 +616,42 @@ public class Matrix
     for(int id = 0; id < index.length; ++id)
     {
       assert (index[id].length == 2);
-      result[id] = this.data[index[id][0] * this.num_col + index[id][1]];
+      result[id] = this._data[index[id][0] * this._num_col + index[id][1]];
     }
     return result;
   }
 
   public void thresholdOnSelf(float thres)
   {
-    final int len = this.data.length;
+    final int len = this._data.length;
     for(int i = 0; i < len; ++i)
     {
-      if(this.data[i] < thres)
+      if(this._data[i] < thres)
       {
-        this.data[i] = 0.0f;
+        this._data[i] = 0.0f;
       }
       else
       {
-        this.data[i] = 1.0f;
+        this._data[i] = 1.0f;
       }
     }
   }
 
   public void erodeOnSelf(int radius, float thres)
   {
-    final int nr_1 = this.num_row - radius;
-    final int nc_1 = this.num_col - radius;
-    float[] copy = Arrays.copyOf(this.data, this.data.length);
-    Arrays.fill(this.data, 0.0f);
+    final int nr_1 = this._num_row - radius;
+    final int nc_1 = this._num_col - radius;
+    float[] copy = Arrays.copyOf(this._data, this._data.length);
+    Arrays.fill(this._data, 0.0f);
     for(int r = radius; r < nr_1; ++r)
     {
-      final int r_s = r * this.num_col;
+      final int r_s = r * this._num_col;
       for(int c = radius; c < nc_1; ++c)
       {
         boolean is_all_above = true;
         for(int rr = -radius; rr <= radius && is_all_above; ++rr)
         {
-          int rs = (rr + r) * this.num_col + c;
+          int rs = (rr + r) * this._num_col + c;
           for(int cc = -radius; cc <= radius && is_all_above; ++cc)
           {
             if(copy[rs + cc] < thres)
@@ -662,7 +662,7 @@ public class Matrix
         }
         if(is_all_above)
         {
-          this.data[c + r_s] = copy[c + r_s];
+          this._data[c + r_s] = copy[c + r_s];
         }
       }
     }

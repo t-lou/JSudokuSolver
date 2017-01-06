@@ -8,10 +8,10 @@ import java.util.Arrays;
 
 public class DataSource
 {
-  private byte[][] data_image;
-  private int[] data_label;
-  private int dim_in;
-  private int dim0, dim1;
+  private byte[][] _data_image;
+  private int[] _data_label;
+  private int _dim_in;
+  private int _dim0, _dim1;
 
   /**
    * convert four bytes to int
@@ -92,14 +92,14 @@ public class DataSource
     int num_image = bytesToInt(Arrays.copyOfRange(raw_image, 4, 8));
     int num_label = bytesToInt(Arrays.copyOfRange(raw_label, 4, 8));
     assert (num_image == num_label);
-    this.dim0 = bytesToInt(Arrays.copyOfRange(raw_image, 8, 12));
-    this.dim1 = bytesToInt(Arrays.copyOfRange(raw_image, 12, 16));
-    this.dim_in = this.dim0 * this.dim1;
-    this.data_label = bytesToInts(Arrays.copyOfRange(raw_label, 8, raw_label.length));
-    this.data_image = new byte[this.data_label.length][this.dim_in];
-    for(int i = 0, offset = 0; i < this.data_label.length; ++i, offset += this.dim_in)
+    this._dim0 = bytesToInt(Arrays.copyOfRange(raw_image, 8, 12));
+    this._dim1 = bytesToInt(Arrays.copyOfRange(raw_image, 12, 16));
+    this._dim_in = this._dim0 * this._dim1;
+    this._data_label = bytesToInts(Arrays.copyOfRange(raw_label, 8, raw_label.length));
+    this._data_image = new byte[this._data_label.length][this._dim_in];
+    for(int i = 0, offset = 0; i < this._data_label.length; ++i, offset += this._dim_in)
     {
-      System.arraycopy(raw_image, 16 + offset, this.data_image[i], 0, this.dim_in);
+      System.arraycopy(raw_image, 16 + offset, this._data_image[i], 0, this._dim_in);
     }
   }
 
@@ -111,8 +111,8 @@ public class DataSource
    */
   public byte[] getImage(int id)
   {
-    assert (id < this.data_label.length);
-    return this.data_image[id];
+    assert (id < this._data_label.length);
+    return this._data_image[id];
   }
 
   /**
@@ -123,8 +123,8 @@ public class DataSource
    */
   public int getLabel(int id)
   {
-    assert (id < this.data_label.length);
-    return this.data_label[id];
+    assert (id < this._data_label.length);
+    return this._data_label[id];
   }
 
   /**
@@ -134,7 +134,7 @@ public class DataSource
    */
   public int getNumData()
   {
-    return this.data_label.length;
+    return this._data_label.length;
   }
 
   /**
@@ -144,16 +144,16 @@ public class DataSource
    */
   public int getDim()
   {
-    return this.dim_in;
+    return this._dim_in;
   }
 
   public int getDim0()
   {
-    return this.dim0;
+    return this._dim0;
   }
 
   public int getDim1()
   {
-    return this.dim1;
+    return this._dim1;
   }
 }

@@ -4,9 +4,9 @@ import java.util.Arrays;
 
 public class SudokuSolver
 {
-  private int[][] board;
-  private int block;
-  private int range;
+  private int[][] _board;
+  private int _block;
+  private int _range;
 
   /**
    * checks whether it is possible to put value to board[row][col]
@@ -18,33 +18,33 @@ public class SudokuSolver
    */
   private boolean isTrialValid(int row, int col, int value)
   {
-    if(this.board[row][col] > 0)
+    if(this._board[row][col] > 0)
     {
       return false;
     }
     else
     {
-      final int offset_row = (row / this.block) * this.block;
-      final int offset_col = (col / this.block) * this.block;
-      for(int i = 0; i < this.range; ++i)
+      final int offset_row = (row / this._block) * this._block;
+      final int offset_col = (col / this._block) * this._block;
+      for(int i = 0; i < this._range; ++i)
       {
-        if(value == this.board[row][i])
+        if(value == this._board[row][i])
         {
           return false;
         }
       }
-      for(int i = 0; i < this.range; ++i)
+      for(int i = 0; i < this._range; ++i)
       {
-        if(value == this.board[i][col])
+        if(value == this._board[i][col])
         {
           return false;
         }
       }
-      for(int i = 0; i < this.block; ++i)
+      for(int i = 0; i < this._block; ++i)
       {
-        for(int j = 0; j < this.block; ++j)
+        for(int j = 0; j < this._block; ++j)
         {
-          if(value == this.board[offset_row + i][offset_col + j])
+          if(value == this._board[offset_row + i][offset_col + j])
           {
             return false;
           }
@@ -61,11 +61,11 @@ public class SudokuSolver
    */
   private boolean isComplete()
   {
-    for(int r = 0; r < this.range; ++r)
+    for(int r = 0; r < this._range; ++r)
     {
-      for(int c = 0; c < this.range; ++c)
+      for(int c = 0; c < this._range; ++c)
       {
-        if(this.board[r][c] < 0)
+        if(this._board[r][c] < 0)
         {
           return false;
         }
@@ -82,11 +82,11 @@ public class SudokuSolver
   private int fillUnique()
   {
     int num_filled = 0;
-    for(int r = 0; r < this.range; ++r)
+    for(int r = 0; r < this._range; ++r)
     {
-      for(int c = 0; c < this.range; ++c)
+      for(int c = 0; c < this._range; ++c)
       {
-        if(this.board[r][c] < 0)
+        if(this._board[r][c] < 0)
         {
           int count_alternative = 0;
           int alternative = -1;
@@ -100,7 +100,7 @@ public class SudokuSolver
           }
           if(count_alternative == 1)
           {
-            this.board[r][c] = alternative;
+            this._board[r][c] = alternative;
             ++num_filled;
           }
         }
@@ -118,11 +118,11 @@ public class SudokuSolver
    */
   private void disp()
   {
-    for(int r = 0; r < this.range; ++r)
+    for(int r = 0; r < this._range; ++r)
     {
-      for(int c = 0; c < this.range; ++c)
+      for(int c = 0; c < this._range; ++c)
       {
-        System.out.print(this.board[r][c] + " ");
+        System.out.print(this._board[r][c] + " ");
       }
       System.out.println("");
     }
@@ -138,7 +138,7 @@ public class SudokuSolver
   {
     int num_filled = 0;
     int num_round = 0;
-    int num_total = this.range * this.range;
+    int num_total = this._range * this._range;
     while(num_filled < num_total)
     {
       int num_filled_now = this.fillUnique();
@@ -161,17 +161,17 @@ public class SudokuSolver
 
   public SudokuSolver(int[][] mapDigits)
   {
-    this.block = 3;
-    this.range = this.block * this.block;
-    this.board = new int[this.range][this.range];
-    for(int i = 0; i < this.range; ++i)
+    this._block = 3;
+    this._range = this._block * this._block;
+    this._board = new int[this._range][this._range];
+    for(int i = 0; i < this._range; ++i)
     {
-      Arrays.fill(this.board[i], -1);
+      Arrays.fill(this._board[i], -1);
     }
     for(int[] digit : mapDigits)
     {
       assert (digit.length == 3);
-      this.board[digit[0]][digit[1]] = digit[2];
+      this._board[digit[0]][digit[1]] = digit[2];
     }
   }
 }
