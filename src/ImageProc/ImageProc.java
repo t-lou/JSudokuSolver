@@ -1,11 +1,12 @@
 package ImageProc;
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 
 import NN.Matrix;
 
@@ -70,33 +71,36 @@ public class ImageProc
     return image;
   }
 
-  private static BufferedImage drawHoughPoint(BufferedImage image, Color color, int r, int the)
+  private static BufferedImage drawHoughPoints(BufferedImage image, Color color, float[][] houghs)
   {
     final int color_val = color.getRGB();
-    final float cos_the = (float) Math.cos(Math.toRadians((double) the));
-    final float sin_the = (float) Math.sin(Math.toRadians((double) the));
-    final float r_val = (float) r;
     final int nr = image.getHeight();
     final int nc = image.getWidth();
-    if(Math.abs(cos_the) > Math.sqrt(0.5f))
+    for(float[] hough : houghs)
     {
-      for(int ir = 0; ir < nr; ++ir)
+      final float cos_the = (float) Math.cos(Math.toRadians((double) hough[1]));
+      final float sin_the = (float) Math.sin(Math.toRadians((double) hough[1]));
+      final float r_val = hough[0];
+      if(Math.abs(cos_the) > Math.sqrt(0.5f))
       {
-        final int ic = Math.round((r_val - sin_the * (float) ir) / cos_the);
-        if(ic >= 0 && ic < nc)
+        for(int ir = 0; ir < nr; ++ir)
         {
-          image.setRGB(ic, ir, color_val);
+          final int ic = Math.round((r_val - sin_the * (float) ir) / cos_the);
+          if(ic >= 0 && ic < nc)
+          {
+            image.setRGB(ic, ir, color_val);
+          }
         }
       }
-    }
-    else
-    {
-      for(int ic = 0; ic < nc; ++ic)
+      else
       {
-        final int ir = Math.round((r_val - cos_the * (float) ic) / sin_the);
-        if(ir >= 0 && ir < nr)
+        for(int ic = 0; ic < nc; ++ic)
         {
-          image.setRGB(ic, ir, color_val);
+          final int ir = Math.round((r_val - cos_the * (float) ic) / sin_the);
+          if(ir >= 0 && ir < nr)
+          {
+            image.setRGB(ic, ir, color_val);
+          }
         }
       }
     }
@@ -219,18 +223,12 @@ public class ImageProc
   {
     Matrix diff = ImageProc.detectEdge(this._image.conv(this._gaussian_1_3, true));
     diff.normalizeOnSelf();
-//    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "/tmp/tmp/diff.png");
-//    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "D:\\home\\workspace\\xtmp\\diff.png");
     diff.erodeOnSelf(1, 0.2f);
-//    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "/tmp/tmp/erode.png");
-//    ImageProc.saveImage(ImageProc.matrixToImage(diff, 1.0f), "D:\\home\\workspace\\tmp\\erode.png");
     diff.setBoundary(0.0f);
     this._hough = this.transformHough(diff);
     this._hough.normalizeOnSelf();
     this._hough = this._hough.conv(this._gaussian_1_3, true);
     this._hough.normalizeOnSelf();
-//    ImageProc.saveImage(ImageProc.matrixToImage(this.hough, 1.0f), "/tmp/tmp/hough.png");
-//    ImageProc.saveImage(ImageProc.matrixToImage(this.hough, 1.0f), "D:\\home\\workspace\\tmp\\hough.png");
     this._hough_maxima_index = this._hough.getLocalMaxima(10, 0.6f, true);
     this._hough_maxima_value = this._hough.getElement(this._hough_maxima_index);
     final int length = this._hough_maxima_index.length;
@@ -244,15 +242,7 @@ public class ImageProc
         this._hough_maxima_index[i][1] -= 180;
         this._hough_maxima_index[i][0] = -this._hough_maxima_index[i][0];
       }
-//      System.out.println(i + ": " + index_max[i][0] + " " + index_max[i][1]
-//          + ": " + hough_local_max[i]);
-//      image = ImageProc.drawHoughPoint(image, Color.red, index_max[i][0], index_max[i][1]);
-//      ImageProc.saveImage(image, "/tmp/tmp/" + i + ".png");
-//      ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\" + i + ".png");
     }
-//    ImageProc.saveImage(image, "/tmp/tmp/lines.png");
-//    ImageProc.saveImage(image, "D:\\home\\workspace\\tmp\\lines.png");
-//    System.out.println("there are " + index_max.length + " local maximas");
   }
 
   public void drawTable(float[][][] lines, String filename)
@@ -261,13 +251,153 @@ public class ImageProc
     for(int id_dir = 0; id_dir < lines.length; ++id_dir)
     {
       assert(lines[id_dir].length == 4);
-      for(int id_line = 0; id_line < lines[id_dir].length; ++id_line)
-      {
-        ImageProc.drawHoughPoint(image, Color.red,
-            Math.round(lines[id_dir][id_line][0]), Math.round(lines[id_dir][id_line][1]));
-      }
+      ImageProc.drawHoughPoints(image, Color.red, lines[id_dir]);
     }
     ImageProc.saveImage(image, filename);
+  }
+
+  private static float[] getLineFromHough(float[] hough)
+  {
+    assert(hough.length == 2);
+    double rad = Math.toRadians((double)hough[1]);
+    return new float[]{(float)Math.cos(rad), (float)Math.sin(rad), -hough[0]};
+  }
+
+  private static float[] getIntersectionLines(float[] line0, float[] line1)
+  {
+    assert(line0.length == 3 && line1.length == 3);
+    float[] intersection = new float[2];
+    final float divisor = line0[1] * line1[0] - line0[0] * line1[1];
+    intersection[1] = -(line0[2] * line1[0] - line0[0] * line1[2]) / divisor;
+    intersection[0] = -(line0[1] * line1[2] - line0[2] * line1[1]) / divisor;
+    return intersection;
+  }
+
+  private static float[] getCenter(float[][] points)
+  {
+    assert(points.length > 0);
+    final int length = points[0].length;
+    float[] center = new float[length];
+    Arrays.fill(center, 0.0f);
+    for(float[] point : points)
+    {
+      assert(point.length == length);
+      for(int i = 0; i < length; ++i)
+      {
+        center[i] += point[i];
+      }
+    }
+    for(int i = 0; i < length; ++i)
+    {
+      center[i] /= (float)length;
+    }
+    return center;
+  }
+
+  private static float getNorm(float[] vector)
+  {
+    float norm = 0.0f;
+    for(float x : vector)
+    {
+      norm += x * x;
+    }
+    return (float)Math.sqrt((double)norm);
+  }
+
+  private static float[] getUnit(float[] vector)
+  {
+    final float norm = ImageProc.getNorm(vector);
+    float[] unit = vector.clone();
+    for(int i = 0; i < vector.length; ++i)
+    {
+      unit[i] /= norm;
+    }
+    return unit;
+  }
+
+  private static float[] diff(float[] vector0, float[] vector1)
+  {
+    assert(vector0.length == vector1.length);
+    float[] d = new float[vector0.length];
+    for(int i = 0; i < vector0.length; ++i)
+    {
+      d[i] = vector0[i] - vector1[i];
+    }
+    return d;
+  }
+
+  private static float[] rotate2D(float[] vector, float degree)
+  {
+    assert(vector.length == 2);
+    final double radian = Math.toRadians((double)degree);
+    final float c = (float)Math.cos(radian);
+    final float s = (float)Math.sin(radian);
+    return new float[]{c * vector[0] - s * vector[1], s * vector[0] + c * vector[1]};
+  }
+
+  private static float dot(float[] vector0, float[] vector1)
+  {
+    assert(vector0.length == vector1.length);
+    float d = 0.0f;
+    for(int i = 0; i < vector0.length; ++i)
+    {
+      d += vector0[i] * vector1[i];
+    }
+    return d;
+  }
+
+  private static float[][] getFourCorners(float[][][] hough_lines)
+  {
+    assert(hough_lines.length == 2);
+    for(float[][] lines : hough_lines)
+    {
+      assert(lines.length == 4);
+      for(float[] line : lines)
+      {
+        assert(line.length == 2);
+      }
+    }
+    float corners[][] = new float[4][2];
+    float lines[][] = new float[4][3];
+    // the four corners are intersection of four lines with extreme r
+    // suppose lines are already sorted by r value(translation)
+    lines[0] = ImageProc.getLineFromHough(hough_lines[0][0]);
+    lines[1] = ImageProc.getLineFromHough(hough_lines[1][0]);
+    lines[2] = ImageProc.getLineFromHough(hough_lines[0][3]);
+    lines[3] = ImageProc.getLineFromHough(hough_lines[1][3]);
+    for(int i = 0; i < 4; ++i)
+    {
+      corners[i] = ImageProc.getIntersectionLines(lines[i], lines[(i + 1) % 4]);
+    }
+    // make sure corners are in specific order(for transform)
+    float[] center = ImageProc.getCenter(corners);
+    // get directions of corners, if after rotation of 90 degree directions[1] is very different, exchange
+    if(ImageProc.dot(ImageProc.diff(corners[1], center),
+        ImageProc.rotate2D(ImageProc.diff(corners[0], center), 90.0f)) < 0.0f)
+    {
+      // rotated corner #0 has opposite direction as corner #1
+      float[] t = corners[1];
+      corners[1] = corners[3];
+      corners[3] = t;
+    }
+    return corners;
+  }
+
+  public Matrix getTransform(float[][][] hough_lines)
+  {
+    Matrix tf = new Matrix();
+    final float[][] corners = getFourCorners(hough_lines); // corners in one order
+    // each block is 32x32, giving 2 pixel boundary (28x28 for classification)
+    // total size is 288x288 (288 = 32 * 9), half size is 144 (144 = 288 / 2)
+    final float half_size = 144.0f;
+    float[][] transformed = new float[][]{
+        {-half_size, -half_size},
+        {half_size, -half_size},
+        {half_size, half_size},
+        {-half_size, half_size}};
+
+
+    return tf;
   }
 
   /**

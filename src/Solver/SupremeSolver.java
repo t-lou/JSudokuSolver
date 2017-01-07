@@ -19,6 +19,7 @@ public class SupremeSolver
         this._img_proc.getHoughMaximaValue());
     this._table_recognizer.proceed();
 //    this._img_proc.drawTable(this._table_recognizer.getTableLines(), "/tmp/lines.png");
+    this._img_proc.getTransform(this._table_recognizer.getTableLines());
   }
 
   public SupremeSolver(String filename)
