@@ -270,6 +270,20 @@ public class Matrix
     }
   }
 
+  public Matrix conj()
+  {
+    Matrix mat = new Matrix(this._num_col, this._num_row);
+    final int[] css = this.genColStart();
+    for(int r = 0, rs = 0; r < this._num_row; ++r, rs += this._num_col)
+    {
+      for(int c = 0; c < this._num_col; ++c)
+      {
+        mat._data[css[c] + r] = this._data[rs + c];
+      }
+    }
+    return mat;
+  }
+
   /**
    * this := this.T, suppose this is vector (1 column)
    */
@@ -339,11 +353,9 @@ public class Matrix
   private int[] genArithmeticSequence(int len, int diff)
   {
     int[] result = new int[len];
-    int this_ = 0;
-    for(int i = 0; i < len; ++i)
+    for(int i = 0, this_ = 0; i < len; ++i, this_ += diff)
     {
       result[i] = this_;
-      this_ += diff;
     }
     return result;
   }
@@ -693,5 +705,115 @@ public class Matrix
         }
       }
     }
+  }
+
+  private static void dispArray(int nr, int nc, float[] d)
+  {
+    for(int r = 0, rs = 0; r < nr; ++r, rs += nc)
+    {
+      for(int c = 0; c < nc; ++c)
+      {
+        System.out.print(d[rs + c] + " ");
+      }
+      System.out.println();
+    }
+    System.out.println();
+  }
+
+  public void disp()
+  {
+    Matrix.dispArray(this._num_row, this._num_col, this._data);
+  }
+
+  public void invGaussJordanOnSelf()
+  {
+    assert(this._num_col == this._num_row);
+    final int size = this._num_col;
+    float[] data = new float[size * size];
+    Arrays.fill(data, 0.0f);
+    for(int i = 0; i < size; ++i)
+    {
+      data[i * size + i] = 1.0f;
+    }
+
+    // clear lower triangle
+    for(int c = 0; c < size; ++c)
+    {
+      final int cs = c * size + c;
+      final int length = size - c;
+      // reorder for largest element in column
+      int index_max = c;
+      float abs_max = Math.abs(this._data[cs]);
+      int id = cs + size;
+      for(int i = c + 1; i < size; ++i, ++id)
+      {
+        final float abs = Math.abs(this._data[id]);
+        if(abs > abs_max)
+        {
+          abs_max = abs;
+          index_max = i;
+        }
+      }
+      if(index_max != c)
+      {
+        // swap row index_max and c
+        final int start0 = index_max * size;
+        final int start1 = c * size;
+        // max -> tmp
+        float[] tmp = Arrays.copyOfRange(this._data, start0, start0 + size);
+        // c ->max
+        System.arraycopy(this._data, start1, this._data, start0, size);
+        // tmp -> c
+        System.arraycopy(tmp, 0, this._data, start1, size);
+        // same to data(local variable)
+        System.arraycopy(data, start0, tmp, 0, size);
+        // c ->max
+        System.arraycopy(data, start1, data, start0, size);
+        // tmp -> c
+        System.arraycopy(tmp, 0, data, start1, size);
+      }
+
+      final float val_diag = this._data[cs];
+      int rs = cs + size;
+      final int row_start = c * size;
+      for(int cc = 0; cc < size; ++cc)
+      {
+        this._data[row_start + cc] /= val_diag;
+        data[row_start + cc] /= val_diag;
+      }
+
+      float[] delta_data = Arrays.copyOfRange(data, cs, cs + length);
+      float[] delta_self = Arrays.copyOfRange(this._data, cs, cs + length);
+      for(int r = c + 1; r < size; ++r, rs += size)
+      {
+        final float scale = this._data[rs];
+        for(int cc = 0; cc < length; ++cc)
+        {
+          data[rs + cc] -= scale * delta_data[cc];
+          this._data[rs + cc] -= scale * delta_self[cc];
+        }
+      }
+    }
+
+    // clear upper triangle
+    for(int c = size - 1; c > 0; --c)
+    {
+      final int length = size - c;
+      final int start = c * size;
+      float[] delta_data = Arrays.copyOfRange(data, start, start + size);
+      float[] delta_self = Arrays.copyOfRange(this._data, start, start + size);
+      int cs = size * (c - 1) + c;
+      for(int r = c - 1; r >= 0; --r, cs -= size)
+      {
+        final float scale = this._data[cs];
+        final int rs = r * size;
+        for(int cc = 0; cc < size; ++cc)
+        {
+          data[rs + cc] -= scale * delta_data[cc];
+          this._data[rs + cc] -= scale * delta_self[cc];
+        }
+      }
+    }
+    this._data = data;
   }
 }

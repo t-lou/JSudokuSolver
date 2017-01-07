@@ -388,14 +388,13 @@ public class ImageProc
     Matrix tf = new Matrix();
     final float[][] corners = getFourCorners(hough_lines); // corners in one order
     // each block is 32x32, giving 2 pixel boundary (28x28 for classification)
-    // total size is 288x288 (288 = 32 * 9), half size is 144 (144 = 288 / 2)
-    final float half_size = 144.0f;
+    // total size is 288x288 (288 = 32 * 9)
+    final float size = 288.0f;
     float[][] transformed = new float[][]{
-        {-half_size, -half_size},
-        {half_size, -half_size},
-        {half_size, half_size},
-        {-half_size, half_size}};
-
+        {0.0f, 0.0f},
+        {size, 0.0f},
+        {size, size},
+        {0.0f, size}};
 
     return tf;
   }

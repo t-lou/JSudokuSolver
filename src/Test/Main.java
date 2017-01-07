@@ -1,5 +1,6 @@
 package Test;
 
+import NN.Matrix;
 import NN.NeuralNetworkStorage;
 import NN.Trainer;
 import Solver.SudokuSolver;
@@ -75,6 +76,13 @@ public class Main
     SupremeSolver ssolver = new SupremeSolver("/home/tlou/Downloads/cbhsudoku.png");
 //		SupremeSolver ssolver = new SupremeSolver("D:\\home\\workspace\\cbhsudoku.png");
     ssolver.process();
+
+//    Matrix mat = new Matrix(3, 3, new float[]{
+//        1.0f, 2.0f, 0.0f, 2.0f, 4.0f, 1.0f, 2.0f, 1.0f, 0.0f
+//    });
+//    mat.disp();
+//    mat.invGaussJordanOnSelf();
+//    mat.disp();
 
     long end = System.currentTimeMillis();
     System.out.println("Took " + 0.001f * (float) (end - start) + " s");
