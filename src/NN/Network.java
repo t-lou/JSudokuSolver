@@ -146,14 +146,20 @@ public class Network
    *
    * @return
    */
+
   public int getResult()
+  {
+    return this.getResult(0.0f);
+  }
+
+  public int getResult(float threshold)
   {
     float max = -1.0f;
     int id_max = -1;
     float[] eval = this._interpretations[this._num_hidden_layer].getData();
     for(int i = 0; i < this._num_output; ++i)
     {
-      if(max < eval[i])
+      if(eval[i] > threshold && eval[i] > max)
       {
         id_max = i;
         max = eval[i];
@@ -167,22 +173,16 @@ public class Network
    *
    * @return
    */
-  public float getFakeEntropy()
+  public float getEntropy()
   {
-    float err = 0.0f;
-    float[] eval = this._interpretations[this._num_hidden_layer].getData();
-    for(int i = 0; i < this._num_output; ++i)
+    float entropy = 0.0f;
+    final float[] eval = this._interpretations[this._num_hidden_layer].getData();
+    final int length = this._num_output;
+    for(int i = 0; i < length; ++i)
     {
-      if(eval[i] < 0.5f)
-      {
-        err += eval[i] * eval[i];
-      }
-      else
-      {
-        err += (1.0f - eval[i]) * (1.0f - eval[i]);
-      }
+      entropy += (float)Math.log((double) eval[i]);
     }
-    return err;
+    return -entropy / ((float)length * (float)Math.log(2.0));
   }
 
   /**
