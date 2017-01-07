@@ -497,7 +497,27 @@ public class Matrix
     }
   }
 
-  private int[] getSortOrder(List<Float> list)
+  public static int[] getSortOrder(float[] value)
+  {
+    return Matrix.getSortOrder(value, true);
+  }
+
+  public static int[] getSortOrder(float[] value, boolean is_descending)
+  {
+    List<Float> list = new ArrayList<>();
+    for(float val : value)
+    {
+      list.add(new Float(val));
+    }
+    return Matrix.getSortOrder(list, is_descending);
+  }
+
+  public static int[] getSortOrder(List<Float> list)
+  {
+    return Matrix.getSortOrder(list, true);
+  }
+
+  public static int[] getSortOrder(List<Float> list, boolean is_descending)
   {
     List<Integer> order = new LinkedList<Integer>();
     List<Float> sorted = new LinkedList<Float>();
@@ -542,7 +562,14 @@ public class Matrix
     int id_order = 0;
     for(Integer i : order)
     {
-      result[id_order] = i.intValue();
+      if(is_descending)
+      {
+        result[id_order] = i.intValue();
+      }
+      else
+      {
+        result[size_order - id_order - 1] = i.intValue();
+      }
       ++id_order;
     }
     return result;

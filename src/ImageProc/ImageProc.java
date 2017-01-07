@@ -255,6 +255,21 @@ public class ImageProc
 //    System.out.println("there are " + index_max.length + " local maximas");
   }
 
+  public void drawTable(float[][][] lines, String filename)
+  {
+    BufferedImage image = ImageProc.matrixToImage(this._image, 1.0f);
+    for(int id_dir = 0; id_dir < lines.length; ++id_dir)
+    {
+      assert(lines[id_dir].length == 4);
+      for(int id_line = 0; id_line < lines[id_dir].length; ++id_line)
+      {
+        ImageProc.drawHoughPoint(image, Color.red,
+            Math.round(lines[id_dir][id_line][0]), Math.round(lines[id_dir][id_line][1]));
+      }
+    }
+    ImageProc.saveImage(image, filename);
+  }
+
   /**
    * set input image
    *

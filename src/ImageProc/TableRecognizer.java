@@ -1,5 +1,7 @@
 package ImageProc;
 
+import NN.Matrix;
+
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -134,7 +136,7 @@ public class TableRecognizer
     int j = 0;
     for(int i : index_subset)
     {
-      assert (i < length && length_pixel < length_pixel && points[i].length == 2);
+      assert ((i < length) && (length_pixel < length_pixel) && (points[i].length == 2));
       subset[j][0] = points[i][0];
       subset[j][1] = points[i][1];
       ++j;
@@ -306,7 +308,7 @@ public class TableRecognizer
       if(index._value[id] == index._value[id - 2] + 3)
       {
         // one point is missing(0 1 3 or 0 2 3)
-        // interpolate two in the middle
+        // interpolate two in the middle -> 0 1 2 3
         result = new float[4][2];
         final float x = points[index._index[id - 2]][0];
         final float y = points[index._index[id - 2]][1];
@@ -323,6 +325,16 @@ public class TableRecognizer
     return result;
   }
 
+  private static int[] reorder(int[] sequence, int[] order)
+  {
+    int[] ordered = new int[sequence.length];
+    for(int i = 0; i < sequence.length; ++i)
+    {
+      ordered[i] = order[sequence[i]];
+    }
+    return ordered;
+  }
+
   public void proceed()
   {
     // local copy of points
@@ -334,18 +346,29 @@ public class TableRecognizer
       copy_points[i][1] = this._hough_maxima_index[i][1];
     }
 
+    this._hough_table_lines = new float[0][4][2];
     for(int iter = 0, count_dim = 0; iter < 10 && count_dim < 2; ++iter)
     {
       float[] line = TableRecognizer.fitLine(copy_points);
-      final int[] index_inliers = TableRecognizer.getIndexInliers(copy_points, line, 10.0f);
-      final float[][] inliers = TableRecognizer.subsetPoints(copy_points, index_inliers);
-      final float[] dists = TableRecognizer.reparameterPoints(inliers, line);
-      Arrays.sort(dists);
-      SparseIntArray index_unidist_points = TableRecognizer.getIndexUnidistantSequence(dists);
-      float[][] table_lines = TableRecognizer.getContinuousHoughs(index_unidist_points, copy_points);
+      int[] index_inliers = TableRecognizer.getIndexInliers(copy_points, line, 10.0f);
+      float[][] point_inliers = TableRecognizer.subsetPoints(copy_points, index_inliers);
+      float[] params = TableRecognizer.reparameterPoints(point_inliers, line);
+      int[] order = Matrix.getSortOrder(params, false);
+      {
+        float[] copy = params.clone();
+        for(int i = 0; i < params.length; ++i)
+        {
+          params[i] = copy[order[i]];
+        }
+      }
+      SparseIntArray index_unidist_points = TableRecognizer.getIndexUnidistantSequence(params);
+      index_unidist_points._index = TableRecognizer.reorder(index_unidist_points._index, order);
+      float[][] table_lines = TableRecognizer.getContinuousHoughs(index_unidist_points, point_inliers);
       if(table_lines.length != 0)
       {
-        copy_points = TableRecognizer.subsetPoints(copy_points, index_unidist_points._index, true);
+        int[] to_remove = TableRecognizer.reorder(index_unidist_points._index, index_inliers);
+
+        copy_points = TableRecognizer.subsetPoints(copy_points, to_remove, true);
         result[count_dim] = table_lines;
         ++count_dim;
         if(count_dim == 2)
@@ -375,8 +398,12 @@ public class TableRecognizer
     return this._hough_table_lines;
   }
 
+  public boolean isRecognized()
+  {
+    return this._hough_table_lines != null && this._hough_table_lines.length >= 2;
+  }
+
   public TableRecognizer()
   {
-    this._hough_table_lines = new float[0][4][2];
   }
 }
