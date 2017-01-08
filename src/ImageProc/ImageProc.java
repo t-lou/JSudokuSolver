@@ -423,11 +423,11 @@ public class ImageProc
     this._transform = new Matrix(3, 3, tf_data);
   }
 
-  public BufferedImage rectifyImage(int[] offset, int[] size)
+  public byte[] getImage(int[] offset, int[] size)
   {
     assert(this._transform != null && offset.length == 2 && size.length == 2);
+    byte[] feature = new byte[size[0] * size[1]];
     final int[] size_image = new int[]{this._image.getNumRow(), this._image.getNumCol()};
-    BufferedImage image = new BufferedImage(size[0], size[1], BufferedImage.TYPE_3BYTE_BGR);
     for(int r = 0; r < size[0]; ++r)
     {
       final float u = (float)(offset[0] + r);
@@ -441,11 +441,44 @@ public class ImageProc
         if(x >= 0 && x < size_image[1] && y >= 0 && y < size_image[0])
         {
           int val = (int)(this._image.getData()[x + size_image[1] * y] * 255.0f);
-          image.setRGB(c, r, new Color(val, val, val).getRGB());
+//          if(val > 127)
+//          {
+//            val = 127 - val;
+//          }
+          feature[c + size[1] * r] = (byte)val;
         }
       }
     }
+    return feature;
+  }
+
+  public BufferedImage rectifyImage(int[] offset, int[] size)
+  {
+    BufferedImage image = new BufferedImage(size[0], size[1], BufferedImage.TYPE_3BYTE_BGR);
+    byte[] feature = this.getImage(offset, size);
+    for(int r = 0; r < size[0]; ++r)
+    {
+      for(int c = 0; c < size[1]; ++c)
+      {
+          int val = 0xFF & (int)feature[c + size[1] * r];
+          image.setRGB(c, r, new Color(val, val, val).getRGB());
+      }
+    }
     return image;
+  }
+
+  public byte[] getBlock(int i, int j)
+  {
+    final int[] offset = new int[]{i * 32 + 2, j * 32 + 2};
+    final int[] size = new int[]{28, 28};
+    return this.getImage(offset, size);
+  }
+
+  public BufferedImage rectifyBlock(int i, int j)
+  {
+    final int[] offset = new int[]{i * 32 + 2, j * 32 + 2};
+    final int[] size = new int[]{28, 28};
+    return this.rectifyImage(offset, size);
   }
 
   /**

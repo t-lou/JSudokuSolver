@@ -21,6 +21,9 @@ public class SupremeSolver
 //    this._img_proc.drawTable(this._table_recognizer.getTableLines(), "/tmp/lines.png");
     this._img_proc.extractTransform(this._table_recognizer.getTableLines());
 //    ImageProc.saveImage(this._img_proc.rectifyImage(new int[]{0, 0}, new int[]{288, 288}), "/tmp/rect.png");
+    for(int i = 0; i < 9; ++i)
+      for(int j = 0; j < 9; ++j)
+        ImageProc.saveImage(this._img_proc.rectifyBlock(i, j), "/tmp/rect"+i+""+j+".png");
   }
 
   public SupremeSolver(String filename)
