@@ -807,4 +807,19 @@ public class Matrix
       }
     }
   }
+
+  public float[] getZeroSpaceDoF1()
+  {
+    assert(this._num_col == this._num_row + 1);
+    Matrix kernel = new Matrix(this);
+    kernel.eliminateGaussJordanOnSelf();
+    float[] result = new float[this._num_col];
+    int index = this._num_col - 1;
+    for(int i = 0; i < this._num_row; ++i, index += this._num_col)
+    {
+      result[i] = -kernel._data[index];
+    }
+    result[this._num_row] = 1.0f;
+    return result;
+  }
 }

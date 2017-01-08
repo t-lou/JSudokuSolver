@@ -3,6 +3,8 @@ package ImageProc;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.Buffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
@@ -15,6 +17,7 @@ public class ImageProc
   private Matrix _image;
   private Matrix _hough;
   private int _offset_hough_r;
+  private Matrix _transform;
   private static Matrix _gaussian_1_3 = new Matrix(3, 3, new float[]{
       0.077847f, 0.123317f, 0.077847f,
       0.123317f, 0.195346f, 0.123317f,
@@ -36,7 +39,7 @@ public class ImageProc
    * @param image
    * @param filename
    */
-  private static void saveImage(BufferedImage image, String filename)
+  public static void saveImage(BufferedImage image, String filename)
   {
     try
     {
@@ -383,20 +386,66 @@ public class ImageProc
     return corners;
   }
 
-  public Matrix getTransform(float[][][] hough_lines)
+  public void extractTransform(float[][][] hough_lines)
   {
-    Matrix tf = new Matrix();
-    final float[][] corners = getFourCorners(hough_lines); // corners in one order
+    // transform from rectified image to real image
+//    Matrix tf = new Matrix();
+    final float[][] transformed = getFourCorners(hough_lines); // corners in one order
     // each block is 32x32, giving 2 pixel boundary (28x28 for classification)
     // total size is 288x288 (288 = 32 * 9)
     final float size = 288.0f;
-    float[][] transformed = new float[][]{
+    float[][] corners = new float[][]{
         {0.0f, 0.0f},
         {size, 0.0f},
         {size, size},
         {0.0f, size}};
+    // solve with dlt (direct linear transform)
+    // maybe normalization here
+    float[] H_data = new float[72]; // 8x9 matrix
+    Arrays.fill(H_data, 0.0f);
+    for(int idp = 0; idp < 4; ++idp)
+    {
+      final int start = 18 * idp;
+      H_data[start] = -corners[idp][0];
+      H_data[start + 1] = -corners[idp][1];
+      H_data[start + 2] = -1.0f;
+      H_data[start + 6] = corners[idp][0] * transformed[idp][0];
+      H_data[start + 7] = corners[idp][1] * transformed[idp][0];
+      H_data[start + 8] = transformed[idp][0];
+      H_data[start + 12] = -corners[idp][0];
+      H_data[start + 13] = -corners[idp][1];
+      H_data[start + 14] = -1.0f;
+      H_data[start + 15] = corners[idp][0] * transformed[idp][1];
+      H_data[start + 16] = corners[idp][1] * transformed[idp][1];
+      H_data[start + 17] = transformed[idp][1];
+    }
+    float[] tf_data = new Matrix(8, 9, H_data).getZeroSpaceDoF1();
+    this._transform = new Matrix(3, 3, tf_data);
+  }
 
-    return tf;
+  public BufferedImage rectifyImage(int[] offset, int[] size)
+  {
+    assert(this._transform != null && offset.length == 2 && size.length == 2);
+    final int[] size_image = new int[]{this._image.getNumRow(), this._image.getNumCol()};
+    BufferedImage image = new BufferedImage(size[0], size[1], BufferedImage.TYPE_3BYTE_BGR);
+    for(int r = 0; r < size[0]; ++r)
+    {
+      final float u = (float)(offset[0] + r);
+      for(int c = 0; c < size[1]; ++c)
+      {
+        final float v = (float)(offset[1] + c);
+        final Matrix pos = this._transform.multiply(new Matrix(3, 1, new float[]{v, u, 1.0f}));
+        float[] pos_data = pos.getData();
+        final int x = Math.round(pos_data[0] / pos_data[2]);
+        final int y = Math.round(pos_data[1] / pos_data[2]);
+        if(x >= 0 && x < size_image[1] && y >= 0 && y < size_image[0])
+        {
+          int val = (int)(this._image.getData()[x + size_image[1] * y] * 255.0f);
+          image.setRGB(c, r, new Color(val, val, val).getRGB());
+        }
+      }
+    }
+    return image;
   }
 
   /**
