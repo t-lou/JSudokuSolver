@@ -725,95 +725,86 @@ public class Matrix
     Matrix.dispArray(this._num_row, this._num_col, this._data);
   }
 
-  public void invGaussJordanOnSelf()
+  public Matrix inv()
   {
     assert(this._num_col == this._num_row);
-    final int size = this._num_col;
-    float[] data = new float[size * size];
-    Arrays.fill(data, 0.0f);
-    for(int i = 0; i < size; ++i)
+    Matrix kernel = new Matrix(this._num_row, this._num_row * 2);
+    for(int r = 0, sk = 0, s_ = 0; r < this._num_row; ++r, sk += kernel._num_col, s_ += this._num_col)
     {
-      data[i * size + i] = 1.0f;
+      System.arraycopy(this._data, s_, kernel._data, sk, this._num_col);
+      Arrays.fill(kernel._data, sk + this._num_col, sk + kernel._num_col, 0.0f);
+      kernel._data[sk + this._num_col + r] = 1.0f;
     }
 
-    // clear lower triangle
-    for(int c = 0; c < size; ++c)
+    kernel.eliminateGaussJordanOnSelf();
+
+    Matrix result = new Matrix(this._num_row, this._num_row);
+    for(int r = 0, sk = 0, s_ = 0; r < this._num_row; ++r, sk += kernel._num_col, s_ += this._num_col)
     {
-      final int cs = c * size + c;
-      final int length = size - c;
-      // reorder for largest element in column
-      int index_max = c;
-      float abs_max = Math.abs(this._data[cs]);
-      int id = cs + size;
-      for(int i = c + 1; i < size; ++i, ++id)
+      System.arraycopy(kernel._data, sk + this._num_col, result._data, s_, this._num_col);
+    }
+    return result;
+  }
+
+  public void eliminateGaussJordanOnSelf()
+  {
+    assert(this._num_row <= this._num_col);
+    // forward
+    for(int r = 0; r < this._num_row; ++r)
+    {
+      // find maximal elem in col
+      final int start = r * this._num_col;
+      int index_max = r;
+      float value_max = Math.abs(this._data[start + r]);
+      for(int rr = r + 1, i = start + r + this._num_col; rr < this._num_row; ++rr, i += this._num_col)
       {
-        final float abs = Math.abs(this._data[id]);
-        if(abs > abs_max)
+        float val = Math.abs(this._data[i]);
+        if(val > value_max)
         {
-          abs_max = abs;
-          index_max = i;
+          value_max = val;
+          index_max = rr;
         }
       }
-      if(index_max != c)
+      if(index_max != r)
       {
-        // swap row index_max and c
-        final int start0 = index_max * size;
-        final int start1 = c * size;
-        // max -> tmp
-        float[] tmp = Arrays.copyOfRange(this._data, start0, start0 + size);
-        // c ->max
-        System.arraycopy(this._data, start1, this._data, start0, size);
-        // tmp -> c
-        System.arraycopy(tmp, 0, this._data, start1, size);
-        // same to data(local variable)
-        System.arraycopy(data, start0, tmp, 0, size);
-        // c ->max
-        System.arraycopy(data, start1, data, start0, size);
-        // tmp -> c
-        System.arraycopy(tmp, 0, data, start1, size);
+        final int index = index_max * this._num_col;
+        float[] tmp = new float[this._num_col];
+        System.arraycopy(this._data, start, tmp, 0, this._num_col);
+        System.arraycopy(this._data, index, this._data, start, this._num_col);
+        System.arraycopy(tmp, 0, this._data, index, this._num_col);
       }
 
-      final float val_diag = this._data[cs];
-      int rs = cs + size;
-      final int row_start = c * size;
-      for(int cc = 0; cc < size; ++cc)
+      // make diagonal elements to 1
+      final float val_diag = this._data[start + r];
+      for(int c = r; c < this._num_col; ++c)
       {
-        this._data[row_start + cc] /= val_diag;
-        data[row_start + cc] /= val_diag;
+        this._data[start + c] /= val_diag;
       }
 
-      float[] delta_data = Arrays.copyOfRange(data, cs, cs + length);
-      float[] delta_self = Arrays.copyOfRange(this._data, cs, cs + length);
-      for(int r = c + 1; r < size; ++r, rs += size)
+      // eliminate elements below
+      for(int rr = r + 1, i = start + r + this._num_col; rr < this._num_row; ++rr, i += this._num_col)
       {
-        final float scale = this._data[rs];
+        final float val = this._data[i];
+        final int row_start = rr * this._num_col;
+        for(int c = r; c < this._num_col; ++c)
+        {
+          this._data[row_start + c] -= this._data[start + c] * val;
+        }
+      }
+    }
+    // backward
+    for(int r = this._num_row - 1; r > 0; --r)
+    {
+      final int start = r + r * this._num_col;
+      final int length = this._num_col - r;
+      for(int rr = 0, i = start - this._num_col; rr < r; ++rr, i -= this._num_col)
+      {
+        final float val = this._data[i];
         for(int cc = 0; cc < length; ++cc)
         {
-          data[rs + cc] -= scale * delta_data[cc];
-          this._data[rs + cc] -= scale * delta_self[cc];
+          this._data[i + cc] -= val * this._data[start + cc];
         }
       }
     }
-
-    // clear upper triangle
-    for(int c = size - 1; c > 0; --c)
-    {
-      final int length = size - c;
-      final int start = c * size;
-      float[] delta_data = Arrays.copyOfRange(data, start, start + size);
-      float[] delta_self = Arrays.copyOfRange(this._data, start, start + size);
-      int cs = size * (c - 1) + c;
-      for(int r = c - 1; r >= 0; --r, cs -= size)
-      {
-        final float scale = this._data[cs];
-        final int rs = r * size;
-        for(int cc = 0; cc < size; ++cc)
-        {
-          data[rs + cc] -= scale * delta_data[cc];
-          this._data[rs + cc] -= scale * delta_self[cc];
-        }
-      }
-    }
-    this._data = data;
   }
 }

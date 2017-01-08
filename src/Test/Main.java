@@ -75,13 +75,14 @@ public class Main
 //		// test total solver
     SupremeSolver ssolver = new SupremeSolver("/home/tlou/Downloads/cbhsudoku.png");
 //		SupremeSolver ssolver = new SupremeSolver("D:\\home\\workspace\\cbhsudoku.png");
-    ssolver.process();
+//    ssolver.process();
 
 //    Matrix mat = new Matrix(3, 3, new float[]{
 //        1.0f, 2.0f, 0.0f, 2.0f, 4.0f, 1.0f, 2.0f, 1.0f, 0.0f
 //    });
 //    mat.disp();
-//    mat.invGaussJordanOnSelf();
+//    mat.inv().disp();
+//    mat.eliminateGaussJordanOnSelf();
 //    mat.disp();
 
     long end = System.currentTimeMillis();
