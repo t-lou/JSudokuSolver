@@ -146,20 +146,19 @@ public class Network
    *
    * @return
    */
-
   public int getResult()
   {
     return this.getResult(0.0f);
   }
 
-  public int getResult(float threshold)
+  public int getResult(float min_score)
   {
-    float max = -1.0f;
+    float max = min_score;
     int id_max = -1;
     float[] eval = this._interpretations[this._num_hidden_layer].getData();
     for(int i = 0; i < this._num_output; ++i)
     {
-      if(eval[i] > threshold && eval[i] > max)
+      if(eval[i] > max)
       {
         id_max = i;
         max = eval[i];

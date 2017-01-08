@@ -1,9 +1,9 @@
 package NN;
 
-//import javax.imageio.ImageIO;
-//import java.awt.*;
-//import java.awt.image.BufferedImage;
-//import java.io.File;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
@@ -26,7 +26,7 @@ public class Trainer
     this._dim = new int[]{this._data_train.getDim0(), this._data_train.getDim1()};
   }
 
-  private byte[] rotateClockwise(byte[] image, int row, int col)
+  private static byte[] rotateClockwise(byte[] image, int row, int col)
   {
     assert (row * col == image.length);
     byte[] tmp = new byte[image.length];
@@ -43,40 +43,39 @@ public class Trainer
     return tmp;
   }
 
-//  private int count;
-//  private void saveImage(byte[] bytes)
-//  {
-//    BufferedImage image = new BufferedImage(this._data_train.getDim0(),
-//        this._data_train.getDim1(), BufferedImage.TYPE_3BYTE_BGR);
-//    for(int r = 0; r < this._data_train.getDim0(); ++r)
-//    {
-//      int row_start = this._data_train.getDim1() * r;
-//      for(int c = 0; c < this._data_train.getDim1(); ++c)
-//      {
-//        int val = (0xFF & bytes[c + row_start]);
-//        image.setRGB(c, r, new Color(val, val, val).getRGB());
-//      }
-//    }
-//    try
-//    {
-//      File ouptut = new File("D:\\home\\workspace\\tmp\\"+this.count+".png");
-//      ImageIO.write(image, "png", ouptut);
-//      ++this.count;
-//    } catch(Exception e)
-//    {
-//    }
-//  }
-
-  private byte[] permuteImage(byte[] image, int type)
+  private int count;
+  private void saveImage(byte[] bytes)
   {
-    final boolean is_to_inverse = type < 4;
-    final int num_rot = type % 4;
+    BufferedImage image = new BufferedImage(this._data_train.getDim0(),
+        this._data_train.getDim1(), BufferedImage.TYPE_3BYTE_BGR);
+    for(int r = 0; r < this._data_train.getDim0(); ++r)
+    {
+      int row_start = this._data_train.getDim1() * r;
+      for(int c = 0; c < this._data_train.getDim1(); ++c)
+      {
+        int val = (0xFF & bytes[c + row_start]);
+        image.setRGB(c, r, new Color(val, val, val).getRGB());
+      }
+    }
+    try
+    {
+//      File ouptut = new File("D:\\home\\workspace\\tmp\\"+this.count+".png");
+      File ouptut = new File("/tmp/tmp/"+this.count+".png");
+      ImageIO.write(image, "png", ouptut);
+      ++this.count;
+    } catch(Exception e)
+    {
+    }
+  }
+
+  private byte[] permuteImage(byte[] image, int num_rot, boolean is_to_inverse)
+  {
     byte[] result = Arrays.copyOf(image, image.length);
     int nr = this._dim[0];
     int nc = this._dim[1];
     for(int r = 0; r < num_rot; ++r)
     {
-      result = this.rotateClockwise(result, nr, nc);
+      result = Trainer.rotateClockwise(result, nr, nc);
       int t = nr;
       nr = nc;
       nc = t;
@@ -96,13 +95,15 @@ public class Trainer
   /**
    * test on validation data
    */
-  public void valid()
+  public void valid(int max_num_perm)
   {
     int count = 0;
+    final int range_rand = 2 * max_num_perm;
     for(int i = 0; i < this._data_valid.getNumData(); ++i)
     {
-      int perm_type = ThreadLocalRandom.current().nextInt(0, 8);
-      this._network.forward(this.permuteImage(this._data_train.getImage(i), perm_type));
+      int perm_type = ThreadLocalRandom.current().nextInt(range_rand);
+      this._network.forward(this.permuteImage(this._data_valid.getImage(i),
+          perm_type % max_num_perm, perm_type < max_num_perm));
       if(this._network.getResult() == this._data_valid.getLabel(i))
 //      if(this._network.getResult() == (perm_type % 4)) // for training orientation
       {
@@ -115,13 +116,17 @@ public class Trainer
   /**
    * train on training data
    */
-  public void train()
+  public void train(int max_num_perm)
   {
+    final int range_rand = 2 * max_num_perm;
     for(int i = 0; i < this._data_train.getNumData(); ++i)
     {
-      int perm_type = ThreadLocalRandom.current().nextInt(0, 8);
-      this._network.forward(this.permuteImage(this._data_train.getImage(i), perm_type));
+      int perm_type = ThreadLocalRandom.current().nextInt(range_rand);
+      this._network.forward(this.permuteImage(this._data_train.getImage(i),
+          perm_type % max_num_perm, perm_type < max_num_perm));
+//      this._network.getResult();
       this._network.backward(this._data_train.getLabel(i));
+//      System.out.println(this._network.getResult()+  " " + this._data_train.getLabel(i));
 //      this._network.backward(perm_type % 4); // for training orientation
     }
     System.out.println("finished training");
