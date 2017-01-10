@@ -33,6 +33,27 @@ public class ImageProc
   private int[][] _hough_maxima_index;
   private float[] _hough_maxima_value;
 
+
+  public static void saveImage(byte[] bytes, int row, int col, String filename)
+  {
+    BufferedImage image = new BufferedImage(row, col, BufferedImage.TYPE_3BYTE_BGR);
+    for(int r = 0; r < row; ++r)
+    {
+      final int row_start = col * r;
+      for(int c = 0; c < col; ++c)
+      {
+        int val = (0xFF & bytes[c + row_start]);
+        image.setRGB(c, r, new Color(val, val, val).getRGB());
+      }
+    }
+    try
+    {
+      ImageIO.write(image, "png", new File(filename));
+    } catch(Exception e)
+    {
+    }
+  }
+
   /**
    * save image to file for debugging
    *
@@ -425,6 +446,11 @@ public class ImageProc
 
   public byte[] getImage(int[] offset, int[] size)
   {
+    return this.getImage(offset, size, 0.5f);
+  }
+
+  public byte[] getImage(int[] offset, int[] size, float threshold)
+  {
     assert(this._transform != null && offset.length == 2 && size.length == 2);
     byte[] feature = new byte[size[0] * size[1]];
     final int[] size_image = new int[]{this._image.getNumRow(), this._image.getNumCol()};
@@ -440,12 +466,9 @@ public class ImageProc
         final int y = Math.round(pos_data[1] / pos_data[2]);
         if(x >= 0 && x < size_image[1] && y >= 0 && y < size_image[0])
         {
-          int val = (int)(this._image.getData()[x + size_image[1] * y] * 255.0f);
-//          if(val > 127)
-//          {
-//            val = 127 - val;
-//          }
-          feature[c + size[1] * r] = (byte)val;
+//          int val = (int)(this._image.getData()[x + size_image[1] * y] * 255.0f);
+          feature[c + size[1] * r] = this._image.getData()[x + size_image[1] * y] > threshold ?
+              (byte)255 : (byte)0;
         }
       }
     }

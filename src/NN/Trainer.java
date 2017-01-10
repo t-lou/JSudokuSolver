@@ -1,10 +1,5 @@
 package NN;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -41,31 +36,6 @@ public class Trainer
       }
     }
     return tmp;
-  }
-
-  private int count;
-  private void saveImage(byte[] bytes)
-  {
-    BufferedImage image = new BufferedImage(this._data_train.getDim0(),
-        this._data_train.getDim1(), BufferedImage.TYPE_3BYTE_BGR);
-    for(int r = 0; r < this._data_train.getDim0(); ++r)
-    {
-      int row_start = this._data_train.getDim1() * r;
-      for(int c = 0; c < this._data_train.getDim1(); ++c)
-      {
-        int val = (0xFF & bytes[c + row_start]);
-        image.setRGB(c, r, new Color(val, val, val).getRGB());
-      }
-    }
-    try
-    {
-//      File ouptut = new File("D:\\home\\workspace\\tmp\\"+this.count+".png");
-      File ouptut = new File("/tmp/tmp/"+this.count+".png");
-      ImageIO.write(image, "png", ouptut);
-      ++this.count;
-    } catch(Exception e)
-    {
-    }
   }
 
   private byte[] permuteImage(byte[] image, int num_rot, boolean is_to_inverse)

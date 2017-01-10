@@ -15,11 +15,11 @@ public class Main
 
     // test digit recognition
 //    String path = "D:\\home\\workspace\\mnist\\";
-    String path = "/home/tlou/workspace/mnist/";
-    String path_train_image = path + "train-images-idx3-ubyte";
-    String path_train_label = path + "train-labels-idx1-ubyte";
-    String path_valid_image = path + "t10k-images-idx3-ubyte";
-    String path_valid_label = path + "t10k-labels-idx1-ubyte";
+//    String path = "/home/tlou/workspace/mnist/";
+//    String path_train_image = path + "train-images-idx3-ubyte";
+//    String path_train_label = path + "train-labels-idx1-ubyte";
+//    String path_valid_image = path + "t10k-images-idx3-ubyte";
+//    String path_valid_label = path + "t10k-labels-idx1-ubyte";
 //    String path_train_image = path + "notMNIST_large_image";
 //    String path_train_label = path + "notMNIST_large_label";
 //    String path_valid_image = path + "notMNIST_small_image";
@@ -80,21 +80,6 @@ public class Main
 //    ssolver.loadClassifierDigit("/home/tlou/workspace/JSudokuSolver/data/nn_no_rot.nn");
 //    ssolver.loadClassifierOrientation("/home/tlou/workspace/JSudokuSolver/data/nn_rotation.nn");
 //    ssolver.process();
-
-//    Matrix mat = new Matrix(3, 3, new float[]{
-//        1.0f, 2.0f, 0.0f, 2.0f, 4.0f, 1.0f, 2.0f, 1.0f, 0.0f
-//    });
-//    Matrix mat = new Matrix(2, 3, new float[]{
-//        2.0f, 3.0f, 5.0f, -4.0f, 2.0f, 3.0f
-//    });
-//    mat.disp();
-//    float[] zs = mat.getZeroSpaceDoF1();
-//    for(float f : zs)
-//      System.out.print(f + " ");
-//    System.out.println();
-//    mat.inv().disp();
-//    mat.eliminateGaussJordanOnSelf();
-//    mat.disp();
 
     long end = System.currentTimeMillis();
     System.out.println("Took " + 0.001f * (float) (end - start) + " s");
