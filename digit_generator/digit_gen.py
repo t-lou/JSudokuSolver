@@ -50,13 +50,13 @@ for id_img in range(NUM_IMG):
     id_font = numpy.random.randint(0, len(FONTS))
     thickness = numpy.random.randint(1, 3)
     base_line = cv2.getTextSize(DIGITS[id_digit], FONTS[id_font], 1.0, thickness)[1] + 1
-    scale_font = float(numpy.random.randint(40, 80)) / 100.0
+    scale_font = float(numpy.random.randint(40, 60)) / 100.0
     scale = float(SIZE_BLOCK) * 0.5 * scale_font / float(base_line)
-    offset = float(SIZE_CANVAS) / 2.0 -  float(base_line) * scale
+    shift = float(SIZE_CANVAS) / 2.0 - float(SIZE_BLOCK) * 0.5 * scale_font
     cv2.putText(copy, DIGITS[id_digit], (0, 2 * base_line + 1), 
             FONTS[id_font], 1.0, BLACK, thickness)
-    copy = cv2.warpAffine(copy, numpy.matrix([[scale, 0.0, offset], [0.0, scale, offset]]), 
-            copy.shape, borderValue = WHITE) 
+    copy = cv2.warpAffine(copy, numpy.matrix([[scale, 0.0, shift], [0.0, scale, shift]]), 
+            copy.shape, borderValue = WHITE)
     # draw lines
     thickness_line = numpy.random.randint(1, 3)
     cv2.line(copy, (0, (SIZE_CANVAS - SIZE_BLOCK) / 2 - thickness_line), 
@@ -72,13 +72,13 @@ for id_img in range(NUM_IMG):
             ((SIZE_CANVAS + SIZE_BLOCK) / 2 + thickness_line, SIZE_CANVAS - 1), 
             BLACK, thickness_line)
     # rotation
-    copy = cv2.warpAffine(copy, get_tf(float(numpy.random.randint(0,10)), (float(SIZE_CANVAS) / 2.0, float(SIZE_CANVAS) / 2.0),
-        (numpy.random.randint(-5, 6), numpy.random.randint(-5, 6)))[0:2, :], 
+    copy = cv2.warpAffine(copy, get_tf(float(numpy.random.randint(-10,11)), (float(SIZE_CANVAS) / 2.0, float(SIZE_CANVAS) / 2.0),
+        (numpy.random.randint(-3, 4), numpy.random.randint(-3, 4)))[0:2, :], 
         copy.shape, borderValue = WHITE) 
 
     copy = copy[(SIZE_CANVAS - SIZE_FEATURE) / 2:(SIZE_CANVAS + SIZE_FEATURE) / 2,
             (SIZE_CANVAS - SIZE_FEATURE) / 2:(SIZE_CANVAS + SIZE_FEATURE) / 2]
-
+    # cv2.imwrite(DIR_OUT + "{}.png".format(id_img), copy)
     copy[copy < 192] = 0
     copy[copy >= 192] = 255
     copy = copy.astype(numpy.uint8)
