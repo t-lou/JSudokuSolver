@@ -24,13 +24,22 @@ public class Main
 //    String path_train_label = path + "notMNIST_large_label";
 //    String path_valid_image = path + "notMNIST_small_image";
 //    String path_valid_label = path + "notMNIST_small_label";
+//    String path_train_image = path + "printed_feature_train";
+//    String path_train_label = path + "printed_label_train";
+//    String path_valid_image = path + "printed_feature_valid";
+//    String path_valid_label = path + "printed_label_valid";
 //    Trainer trainer = new Trainer(path_train_image, path_train_label,
-//        path_valid_image, path_valid_label, 3, 300, 10, 0.0001f);
-//    for(int i = 0; i < 20; ++i)
+//        path_valid_image, path_valid_label, 4, 400, 11, 0.0001f);
+//    for(int i = 0; i < 30; ++i)
 //    {
 //      System.out.println("round " + i);
 //      trainer.train(1);
 //      trainer.valid(1);
+//      if(!trainer.isNetworkNormal())
+//      {
+//        System.out.println("Training crashed");
+//        break;
+//      }
 //    }
 //    NeuralNetworkStorage.save("/home/tlou/nn.nn", trainer.getNetwork());
 //    trainer.SetNetwork(NeuralNetworkStorage.load("/home/tlou/nn.nn"));

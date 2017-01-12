@@ -822,4 +822,32 @@ public class Matrix
     result[this._num_row] = 1.0f;
     return result;
   }
+
+  public boolean isNormal()
+  {
+    boolean is_okay = true;
+    for(float f : this._data)
+    {
+      if(Float.isNaN(f) || Float.isInfinite(f))
+      {
+        is_okay = false;
+        break;
+      }
+    }
+    return is_okay;
+  }
+
+  public float getMaxAbsElem()
+  {
+    float m = 0.0f;
+    for(float f : this._data)
+    {
+      float a = Math.abs(f);
+      if(a > m)
+      {
+        m = a;
+      }
+    }
+    return m;
+  }
 }

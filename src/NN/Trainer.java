@@ -1,5 +1,7 @@
 package NN;
 
+import ImageProc.ImageProc;
+
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -74,6 +76,7 @@ public class Trainer
       int perm_type = ThreadLocalRandom.current().nextInt(range_rand);
       this._network.forward(this.permuteImage(this._data_valid.getImage(i),
           perm_type % max_num_perm, perm_type < max_num_perm));
+//      this._network.forward(this._data_valid.getImage(i));
       if(this._network.getResult() == this._data_valid.getLabel(i))
 //      if(this._network.getResult() == (perm_type % 4)) // for training orientation
       {
@@ -94,9 +97,9 @@ public class Trainer
       int perm_type = ThreadLocalRandom.current().nextInt(range_rand);
       this._network.forward(this.permuteImage(this._data_train.getImage(i),
           perm_type % max_num_perm, perm_type < max_num_perm));
-//      this._network.getResult();
+//      this._network.forward(this._data_train.getImage(i));
       this._network.backward(this._data_train.getLabel(i));
-//      System.out.println(this._network.getResult()+  " " + this._data_train.getLabel(i));
+//      System.out.println(this._network.getResult() + " " + this._data_train.getLabel(i));
 //      this._network.backward(perm_type % 4); // for training orientation
     }
     System.out.println("finished training");
@@ -120,5 +123,10 @@ public class Trainer
   public void SetNetwork(Network network)
   {
     this._network = network;
+  }
+
+  public boolean isNetworkNormal()
+  {
+    return this._network.isNetworkNormal();
   }
 }

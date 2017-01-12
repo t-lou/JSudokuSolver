@@ -70,9 +70,19 @@ public class Network
     mean = sum / (float) bytes.length;
     final float dev = (float) Math.sqrt(sum_sq / (float) bytes.length - mean * mean);
 
-    for(int id = 0; id < bytes.length; ++id)
+    if(dev > 0.0001f)
     {
-      result[id] = (result[id] - mean) / dev;
+      for(int id = 0; id < bytes.length; ++id)
+      {
+        result[id] = (result[id] - mean) / dev;
+      }
+    }
+    else
+    {
+      for(int id = 0; id < bytes.length; ++id)
+      {
+        result[id] -= mean;
+      }
     }
 
     return result;
@@ -131,7 +141,11 @@ public class Network
             Arrays.copyOf(diff.getData(), diff.getNumCol() - 1));
       }
       this._weights[idl].addOnSelf(delta, -this._stepsize);
+//      System.out.print(delta.getMaxAbsElem() + " ");
+//      System.out.println("layer " + idl + " ######################");
+//      delta.disp();
     }
+//    System.out.println();
 
     ++this._count_back_prop;
     if(this._count_back_prop >= this._num_iter_to_damp_stepsize)
@@ -158,12 +172,14 @@ public class Network
     float[] eval = this._interpretations[this._num_hidden_layer].getData();
     for(int i = 0; i < this._num_output; ++i)
     {
+//      System.out.print(eval[i] + " ");
       if(eval[i] > max)
       {
         id_max = i;
         max = eval[i];
       }
     }
+//    System.out.println();
     return id_max;
   }
 
@@ -237,5 +253,19 @@ public class Network
     {
       this._weights[i] = new Matrix(mats[i]);
     }
+  }
+
+  public boolean isNetworkNormal()
+  {
+    boolean is_okay = true;
+    for(Matrix w : this._weights)
+    {
+      if(!w.isNormal())
+      {
+        is_okay = false;
+        break;
+      }
+    }
+    return is_okay;
   }
 }
