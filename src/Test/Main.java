@@ -81,13 +81,16 @@ public class Main
 //		SudokuSolver solver = new SudokuSolver(mapping);
 //		solver.solve();
 
-//		// test total solver
+		// test total solver
 //    String path_test_image = "/home/tlou/Downloads/cbhsudoku.png";
 //    String path_test_image = "D:\\home\\workspace\\cbhsudoku.png";
 //		SupremeSolver ssolver = new SupremeSolver();
 //		ssolver.setImage(path_test_image);
-//    ssolver.loadClassifierDigit("/home/tlou/workspace/JSudokuSolver/data/nn_no_rot.nn");
 //    ssolver.loadClassifierOrientation("/home/tlou/workspace/JSudokuSolver/data/nn_rotation.nn");
+//    final String path_nn = "/home/tlou/workspace/JSudokuSolver/data/";
+//    ssolver.loadClassifierDigit(new String[]{path_nn + "nn_mp_0.nn", path_nn + "nn_mp_1.nn",
+//        path_nn + "nn_mp_2.nn", path_nn + "nn_mp_3.nn", path_nn + "nn_mp_4.nn", path_nn + "nn_mp_5.nn",
+//        path_nn + "nn_mp_6.nn", path_nn + "nn_mp_7.nn", path_nn + "nn_mp_8.nn", path_nn + "nn_mp_9.nn"});
 //    ssolver.process();
 
     long end = System.currentTimeMillis();

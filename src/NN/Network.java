@@ -141,11 +141,7 @@ public class Network
             Arrays.copyOf(diff.getData(), diff.getNumCol() - 1));
       }
       this._weights[idl].addOnSelf(delta, -this._stepsize);
-//      System.out.print(delta.getMaxAbsElem() + " ");
-//      System.out.println("layer " + idl + " ######################");
-//      delta.disp();
     }
-//    System.out.println();
 
     ++this._count_back_prop;
     if(this._count_back_prop >= this._num_iter_to_damp_stepsize)
@@ -153,6 +149,21 @@ public class Network
       this._stepsize *= 0.5f;
       this._count_back_prop = 0;
     }
+  }
+
+  public static int getResult(float[] likelihood, float min_score)
+  {
+    float max = min_score;
+    int id_max = -1;
+    for(int i = 0; i < likelihood.length; ++i)
+    {
+      if(likelihood[i] > max)
+      {
+        id_max = i;
+        max = likelihood[i];
+      }
+    }
+    return id_max;
   }
 
   /**
@@ -167,20 +178,7 @@ public class Network
 
   public int getResult(float min_score)
   {
-    float max = min_score;
-    int id_max = -1;
-    float[] eval = this._interpretations[this._num_hidden_layer].getData();
-    for(int i = 0; i < this._num_output; ++i)
-    {
-//      System.out.print(eval[i] + " ");
-      if(eval[i] > max)
-      {
-        id_max = i;
-        max = eval[i];
-      }
-    }
-//    System.out.println();
-    return id_max;
+    return Network.getResult(this._interpretations[this._num_hidden_layer].getData(), min_score);
   }
 
   /**
@@ -267,5 +265,15 @@ public class Network
       }
     }
     return is_okay;
+  }
+
+  public int[] getDemensionality()
+  {
+    return new int[]{this._num_input, this._num_output};
+  }
+
+  public float[] getLikelihood()
+  {
+    return this._interpretations[this._num_hidden_layer].getData();
   }
 }

@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 import ImageProc.ImageProc;
 import ImageProc.TableRecognizer;
 import NN.Network;
+import NN.NetworkGroup;
 import NN.NeuralNetworkStorage;
 
 public class SupremeSolver
@@ -14,7 +15,8 @@ public class SupremeSolver
   private SudokuSolver _solver;
   private TableRecognizer _table_recognizer;
   private ImageProc _img_proc;
-  private Network _classifier_digit;
+//  private Network _classifier_digit;
+  private NetworkGroup _classifier_digit;
   private Network _classifier_orientation;
 
   public void process()
@@ -34,15 +36,19 @@ public class SupremeSolver
         ImageProc.saveImage(feature, 28, 28, "/tmp/"+i+""+j+".png");
         this._classifier_orientation.forward(feature);
         this._classifier_digit.forward(feature);
-        System.out.println(i + " " + j + ": " + this._classifier_digit.getResult(0.3f)
-          + " " + this._classifier_orientation.getResult(0.5f));
+        System.out.println(i + " " + j + ": " + this._classifier_digit.getResult(0.2f)
+          + " " + this._classifier_orientation.getResult(0.2f));
       }
     }
   }
 
-  public void loadClassifierDigit(String filename)
+//  public void loadClassifierDigit(String filename)
+//  {
+//    this._classifier_digit = NeuralNetworkStorage.load(filename);
+//  }
+  public void loadClassifierDigit(String[] filenames)
   {
-    this._classifier_digit = NeuralNetworkStorage.load(filename);
+    this._classifier_digit.setNetworkByFile(filenames);
   }
 
   public void loadClassifierOrientation(String filename)
@@ -68,5 +74,6 @@ public class SupremeSolver
   {
     this._img_proc = new ImageProc();
     this._table_recognizer = new TableRecognizer();
+    this._classifier_digit = new NetworkGroup();
   }
 }
