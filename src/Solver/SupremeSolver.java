@@ -51,6 +51,11 @@ public class SupremeSolver
     this._classifier_digit.setNetworkByFile(filenames);
   }
 
+  public void loadClassifierDigit(String dirname)
+  {
+    this._classifier_digit.setNetworkList(NeuralNetworkStorage.loadDir(dirname));
+  }
+
   public void loadClassifierOrientation(String filename)
   {
     this._classifier_orientation = NeuralNetworkStorage.load(filename);

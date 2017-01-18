@@ -91,6 +91,7 @@ public class Main
 //    ssolver.loadClassifierDigit(new String[]{path_nn + "nn_mp_0.nn", path_nn + "nn_mp_1.nn",
 //        path_nn + "nn_mp_2.nn", path_nn + "nn_mp_3.nn", path_nn + "nn_mp_4.nn", path_nn + "nn_mp_5.nn",
 //        path_nn + "nn_mp_6.nn", path_nn + "nn_mp_7.nn", path_nn + "nn_mp_8.nn", path_nn + "nn_mp_9.nn"});
+//    ssolver.loadClassifierDigit("/home/tlou/nn/");
 //    ssolver.process();
 
     long end = System.currentTimeMillis();

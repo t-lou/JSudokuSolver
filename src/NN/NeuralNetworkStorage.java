@@ -6,7 +6,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * FILE FORMAT
@@ -174,5 +176,25 @@ public class NeuralNetworkStorage
       network = new Network();
     }
     return network;
+  }
+
+  public static List<Network> loadDir(String dirname)
+  {
+    List<Network> list = new ArrayList<Network>();
+    File path = new File(dirname);
+    if(path.isDirectory())
+    {
+      String[] filenames = path.list();
+      for(String filename : filenames)
+      {
+        final int length = filename.length();
+        if(length > 3 && Arrays.equals(filename.substring(length - 3, length).getBytes(),
+            ".nn".getBytes()))
+        {
+          list.add(NeuralNetworkStorage.load(dirname + "/" + filename));
+        }
+      }
+    }
+    return list;
   }
 }

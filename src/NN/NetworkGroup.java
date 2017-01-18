@@ -12,6 +12,11 @@ public class NetworkGroup
 {
   private List<Network> _networks;
 
+  public void setNetworkList(List<Network> list)
+  {
+    this._networks = list;
+  }
+
   public boolean setNetworkByFile(String[] filenames)
   {
     for(String filename : filenames)
